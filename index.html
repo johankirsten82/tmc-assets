@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="en" dir="ltr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- =====================================================================
+  TMC BASE APP — CONFIG. Change ONLY this block for a new app, then run:
+      python3 tools/apply_config.py
+  (it writes manifest.json, sw.js cache/version, icons and the QR code).
+  APP_ID: short, lowercase, unique per app (e.g. "purshes", "grv", "food").
+          Every storage key, cache, manifest id and SW is namespaced by it,
+          so apps on the same site / same phone never share data.
+  CACHE_PREFIX (optional): cache name start, lowercase letters/digits and
+          single hyphens (e.g. "tmc-fuel" gives caches "tmc-fuel-v1").
+          Defaults to APP_ID. Storage keys always use APP_ID (no hyphens).
+  SYNC_URL: this app's own Google Apps Script /exec link. Put it HERE so a
+          fresh install is connected at once (the link is public, that's fine).
+  SYNC_CODE: leave EMPTY (VER 4+). Phones then sign in with name + PIN and
+          get a session token from the script. A code is only for old apps;
+          it can also arrive by a join link  .../#k=CODE  (saved, then wiped
+          from the address bar). Never put a real code in a public repo.
+  ADMIN_ALIASES: name keys (lowercase, no spaces/dots) that mean the Admin.
+====================================================================== -->
+<script id="cfg">window.CONFIG=/*CONFIG*/{
+  "APP_ID": "tmcassets",
+  "CACHE_PREFIX": "tmcassets",
+  "NAME": "TMC Assets",
+  "SHORT": "TMC Assets",
+  "VER": 7,
+  "COLOR": "#0e7490",
+  "COLOR_DARK": "#155e75",
+  "REPORT_COLOR": "#1B7F3B",
+  "BG": "#f1f5f9",
+  "SYNC_URL": "https://script.google.com/macros/s/AKfycbx4YSwRNb7fRIWeaU3RZyTslblvkYwDcGn5TPzODOB-GKffBOt8ds9oOK1hx1DExUq5/exec",
+  "SYNC_CODE": "",
+  "SHARE_URL": "",
+  "ADMIN_NAME": "JA Kirsten",
+  "ADMIN_ALIASES": ["jakirsten","johankirsten","johanakirsten","jkirsten"],
+  "PERMS": [
+    {"id":"view","icon":"👁️","en":"View","fr":"Voir","ar":"عرض","af":"Kyk"},
+    {"id":"add","icon":"➕","en":"Add","fr":"Ajouter","ar":"إضافة","af":"Voeg by"},
+    {"id":"reports","icon":"📊","en":"Reports","fr":"Rapports","ar":"تقارير","af":"Verslae"},
+    {"id":"export","icon":"📤","en":"Export","fr":"Exporter","ar":"تصدير","af":"Stuur uit"}
+  ],
+  "PERM_DEFAULT": ["view","add"],
+  "PERM_KINDS": {"x":{"view":"view","add":"add"},"a":{"view":"view","add":"add"},"r":{"view":"view","add":"add"},"m":{"view":"view","add":"add"},"c":{"view":"view","add":"add"},"p":{"view":"view","add":"add"}}
+}/*END*/;</script>
+<title>TMC Assets</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#0e7490">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<style>
+/* TMC look = Purchases look (pa-v85). Colour comes from CONFIG COLOR (--c/--cd). Rule 1: every button/field >= 56px. */
+:root{--c:#0e7490;--cd:#155e75;--bg:#f1f5f9}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic","Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;background:var(--bg);color:#0f172a;font-size:17px;min-height:100vh;padding-bottom:80px}
+input,select,textarea,button{font:inherit;font-size:18px;min-height:58px;width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:10px;margin:6px 0;background:#fff;color:#0f172a}
+textarea{min-height:80px}
+button{background:var(--c);color:#fff;border:0;font-weight:600;cursor:pointer;touch-action:manipulation}
+button.sec{background:#e2e8f0;color:#0f172a}button.red{background:#b91c1c}button.sm{width:auto;padding:8px 14px;margin:4px}
+label{display:block;font-size:14px;color:#475569;margin:8px 0 4px}
+.msk:not(.shw){-webkit-text-security:disc}
+.pw{position:relative}.pw .eye{position:absolute;inset-inline-end:4px;top:6px;width:auto;padding:4px 12px;background:transparent;color:#334155;font-size:22px;margin:0;border:0}
+.full{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(var(--c),var(--cd))}
+.signin{position:relative;width:100%;max-width:440px}.signin>.card{margin:0}
+.signin>.ncBox{position:absolute;top:100%;left:0;right:0;margin:16px 0 0}
+.card{background:#fff;border-radius:14px;padding:14px;width:100%;max-width:440px;box-shadow:0 1px 3px #0002;text-align:center;margin-bottom:12px}
+.card h2{margin:6px 0 4px;font-size:22px}.logo{width:84px;height:84px;border-radius:14px}
+.err{color:#b91c1c;font-weight:700;display:none;margin:6px 0}.hint{color:#475569;font-size:15px}
+.langs select{text-align:center}
+header{position:sticky;top:0;z-index:5;background:var(--c);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px}
+header img{width:36px;height:36px;border-radius:8px}header .t{flex:1;min-width:0;font-weight:700;font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}header .u{font-size:15px;opacity:.9}
+header{min-height:56px;flex-wrap:nowrap}header .hS{display:flex;align-items:center;gap:6px;font-size:14px;white-space:nowrap}header .dot{border:2px solid #fff}
+header .hLang{width:auto;min-height:56px;min-width:64px;margin:0;padding:0 8px;border:2px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:17px;font-weight:700}header .hLang option{color:#0f172a}
+@media (max-width:380px){header{gap:6px;padding:8px 10px}header img{width:30px;height:30px}header .t{font-size:17px}}
+.dot{width:14px;height:14px;border-radius:50%;background:#94a3b8;display:inline-block}.dot.ok{background:#22c55e}.dot.err{background:#ef4444}.dot.busy{background:#f59e0b}
+main{padding:12px 12px 110px;max-width:600px;margin:0 auto}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #cbd5e1;z-index:10;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;margin:0;border-radius:0;background:#fff;color:#475569;min-height:64px;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;padding:0 1px;min-width:0}
+nav.tabs button .ticon{font-size:24px}
+/* Items tab/tile/heading use the Assets logo image, not the base 🧩 / 📦 emoji */
+img.asLogo{display:inline-block;vertical-align:middle;border-radius:6px;flex:none;object-fit:contain;background:#fff}
+nav.tabs button .ticon img.asLogo{width:24px;height:24px;display:block;margin:0 auto;border-radius:6px}
+.tile b img.asLogo{width:48px;height:48px;border-radius:10px;display:block}
+h2 img.asLogo{width:28px;height:28px;margin-inline-end:6px}
+nav.tabs button.on{color:var(--c);border-top:3px solid var(--c);background:#f0fdfa}
+.badge{position:absolute;top:4px;inset-inline-end:18%;background:#dc2626;color:#fff;border-radius:9px;padding:0 5px;font-size:12px;line-height:18px;font-weight:700}
+.hhero{display:flex;align-items:center;gap:14px}.hhero img{border-radius:14px;flex:none}.hhero h2{margin:0;font-size:21px}#hDate{color:#475569;margin-top:2px}.hhi{font-size:18px;font-weight:700;color:#0f766e;margin-top:2px}
+.loBand{width:100%;min-height:56px;margin:0 0 10px;font-size:18px;font-weight:700}
+#sOut.loBand{margin:6px 0}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:150px;margin:0;padding:12px 6px;background:#fff;color:#0f172a;border:2px solid #bbf7d0;border-radius:16px;box-shadow:0 2px 8px #0000000f;font-size:17px;font-weight:700}
+.tile.sec{background:#fff}.tile:active{background:#f0fdf4}.tile b{font-size:40px;line-height:1}
+.phView{display:block;width:100%;min-height:60px;font-size:19px;font-weight:700;margin:6px 0}.phOv{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;gap:10px}.phOv img{max-width:100%;max-height:80vh;object-fit:contain;background:#fff}.phOv .phMsg{color:#fff;font-size:20px;text-align:center}.phOv button{min-height:60px;font-size:20px;width:100%;max-width:420px}
+.phPick{display:flex;gap:8px}.phPick label{flex:1;min-height:64px;display:flex;align-items:center;justify-content:center;text-align:center;background:var(--c);color:#fff;border-radius:10px;font-weight:700;font-size:17px;padding:6px;margin:6px 0;cursor:pointer}.phPick label.alt{background:#fff;color:var(--c);border:2px solid var(--c)}.phPick input{display:none}.phPrev{max-width:100%;border-radius:10px;margin-top:6px}
+.rep{width:100%;border-collapse:collapse;font-size:17px;margin:6px 0}.rep th{background:var(--rc);color:#fff;text-align:left;padding:12px 10px}.rep td{padding:12px 10px;border-bottom:1px solid #d1e7d8}.rep tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--rc) 10%,#fff)}.rep tfoot td{background:color-mix(in srgb,var(--rc) 22%,#fff);color:var(--rc);font-weight:800;border-top:3px solid var(--rc)}.repH{background:var(--rc);color:#fff;border-radius:10px;padding:12px;font-weight:800;font-size:19px;margin:6px 0}
+nav.tabs .tlab{display:block;width:100%;font-size:12px;line-height:1.2;text-align:center;white-space:nowrap;overflow:hidden;max-width:100%}
+.rpBar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.rpBar button{margin:0;padding:6px 4px;font-size:16px}.rpBar button.on{background:var(--rc);color:#fff}
+.rpDates{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px}.rpDates>div{min-width:0}.rpDates input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}.rpDates label{margin:4px 0 0}
+.rpAct{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rpAct button{margin:0}.rpAct .rpBk{grid-column:1/-1}
+.rpXls{background:var(--rc)}.rpList button{text-align:start}
+#rpOut .rep{table-layout:fixed;font-size:15px}#rpOut .rep th,#rpOut .rep td{padding:10px 6px;overflow-wrap:anywhere}.rep th{text-align:start}.rep .nm{text-align:end}
+@media print{header,nav.tabs,.bar,.noPr,button{display:none!important}body{background:#fff;padding:0}.box{box-shadow:none}#rpOut .rep th,#rpOut .rep tfoot td,#rpOut .rep tbody tr:nth-child(even) td,.repH{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.box{background:#fff;border-radius:14px;padding:14px;margin:0 0 12px;box-shadow:0 1px 3px #0002}
+.ph{border:4px dashed #f59e0b;background:#fffbeb;text-align:center}
+.bar{display:none;margin:0 0 12px;padding:12px;border-radius:14px;font-weight:700}
+.pendW{background:#fef3c7;border:1px solid #f59e0b;color:#78350f}.updW{background:#fef3c7;border:1px solid #f59e0b;color:#78350f}.updW button{background:#b45309}
+.bar small{display:block;font-weight:500;margin-top:4px}
+.urow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;border-bottom:1px solid #e2e8f0;padding:8px 0}.urow .n{flex:1;min-width:140px;font-weight:700}
+.st{font-size:14px;border-radius:99px;padding:2px 8px;background:#e2e8f0}.st.pending{background:#fef3c7}.st.blocked,.st.rejected{background:#fee2e2}.st.active{background:#dcfce7}
+.insB{background:#16a34a;font-size:20px;min-height:64px}.insH{background:#f1f5f9;border-radius:10px;padding:10px;font-weight:600;margin:6px 0}
+.permBox{width:100%;margin:8px 0;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden;background:#fff}.permBox .hint{padding:8px 12px;margin:0}
+.permT{display:flex;align-items:center;gap:12px;min-height:60px;border-top:1px solid #e2e8f0;padding:6px 14px;font-size:19px;font-weight:700;background:#fff;cursor:pointer}
+.permT span{flex:1}.permT.on{background:#ecfdf5}.permT input{width:32px;height:32px;min-height:32px;margin:0;flex:none;accent-color:var(--c)}
+.permT.lock{color:#94a3b8;background:#f8fafc;cursor:default}.permT.lock small{font-size:14px;font-weight:600}
+.uli{display:flex;align-items:center;gap:10px;width:100%;min-height:64px;background:#fff;color:#0f172a;border:0;border-bottom:1px solid #e2e8f0;border-radius:0;padding:8px 4px;text-align:start;font-size:19px;font-weight:700;box-shadow:none}
+.uli .ui{font-size:26px}
+/* VER 7 (Johan 10 Nov 2026): machine/vehicle pictures are TMC Fuel's own pictures (same SVG per type, same #f1f5f9 rounded frame) */
+.asPicT{flex:none;width:92px;height:58px;border-radius:10px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:36px;line-height:1}.asPicT svg.vic{width:100%;height:100%;display:block}.asPicT .ni{font-size:36px}
+.asHero{height:150px;border-radius:12px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:90px;line-height:1;margin:6px 0 10px;overflow:hidden}.asHero svg.vic{width:100%;height:150px;display:block}
+.typ{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 8px}.typ button{margin:0;padding:4px;min-height:70px;width:auto;background:#fff;color:#0f172a;border:3px solid #cbd5e1;box-shadow:none;display:flex;align-items:center;justify-content:center}.typ button.on{border-color:#f59e0b;outline:3px solid #f59e0b;background:#fffbeb}.typ svg{width:100%;height:46px;display:block}.typ .ni{font-size:34px;line-height:46px}.uli .ut{flex:1;min-width:0}.uli small{display:block;font-size:14px;font-weight:600;color:#475569}.uli .ch{font-size:26px;color:#94a3b8}
+.uopen{padding:6px 0 12px;border-bottom:1px solid #e2e8f0}.uopen .acts{display:flex;flex-wrap:wrap;gap:6px}
+.canR{display:flex;align-items:center;gap:12px;min-height:58px;font-size:20px;font-weight:700;border-bottom:1px solid #e2e8f0}.canR.no{color:#94a3b8}.canR .ci{font-size:26px}
+.fixB{width:auto;min-width:120px;min-height:56px;background:#b45309;font-size:18px}.fixN{width:100%}
+.dsc h2{color:#b91c1c}.dsc button{min-height:60px;font-size:20px}
+#updGo{position:fixed;inset:0;z-index:99999;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:18px}#updGo img{width:96px;height:96px;border-radius:20px}#updGo b{font-size:30px;line-height:1.25;color:#0f172a}#updGo span{font-size:20px;color:#475569}#updGo i{width:64px;height:64px;border:7px solid #e2e8f0;border-top-color:#0f766e;border-radius:50%;animation:updSp 1s linear infinite}@keyframes updSp{to{transform:rotate(360deg)}}
+.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+.ncW{background:#fee2e2;border:1px solid #dc2626;color:#7f1d1d}
+.qr{width:240px;height:240px;max-width:80vw;max-height:80vw;background:#fff}
+
+/*TMC-SIGNIN v1 — shared sign-in block. Copy as-is. Only --tmcS-c/--tmcS-cd (colour), the logo and the app name may differ.*/
+.tmcS{position:fixed!important;inset:0!important;z-index:9000!important;overflow:auto!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important;margin:0!important;min-height:0!important;background:linear-gradient(var(--tmcS-c,#0f766e),var(--tmcS-cd,#115e59))!important;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic","Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif!important;box-sizing:border-box!important}
+.tmcS *{box-sizing:border-box!important;font-family:inherit!important;letter-spacing:normal!important}
+.tmcS .signin{position:relative!important;width:100%!important;max-width:380px!important;margin:0!important;padding:0!important}
+.tmcS .signin>.card{display:block!important;background:#fff!important;border-radius:14px!important;padding:16px!important;margin:0!important;width:100%!important;max-width:none!important;box-shadow:0 1px 3px #0002!important;text-align:center!important;border:0!important}
+.tmcS .tmcS-logo{display:block!important;width:84px!important;height:84px!important;margin:0 auto!important;border-radius:14px!important;padding:0!important}
+.tmcS .tmcS-t{display:block!important;margin:10px 0 12px!important;padding:0!important;font-size:22px!important;line-height:28px!important;height:28px!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;color:#0f172a!important}
+.tmcS .tmcS-lang,.tmcS .tmcS-name{display:block!important;width:100%!important;height:58px!important;min-height:58px!important;max-height:58px!important;margin:0 0 12px!important;padding:0 14px!important;font-size:18px!important;line-height:normal!important;border:1px solid #cbd5e1!important;border-radius:12px!important;color:#0f172a!important;box-shadow:none!important;outline-offset:0}
+.tmcS .tmcS-lang{background:#eef2f6!important;text-align:center!important;text-align-last:center!important}
+.tmcS .tmcS-name{background:#fff!important;text-align:start!important}
+.tmcS .tmcS-err{color:#b91c1c!important;font-weight:700!important;margin:0 0 8px!important;font-size:16px!important}
+.tmcS .tmcS-go{display:block!important;width:100%!important;height:58px!important;min-height:58px!important;margin:0!important;padding:0 14px!important;font-size:19px!important;font-weight:700!important;border:0!important;border-radius:12px!important;background:var(--tmcS-c,#0f766e)!important;color:#fff!important;box-shadow:none!important}
+.tmcS .ncBox{position:absolute!important;top:100%!important;left:0!important;right:0!important;bottom:auto!important;width:auto!important;margin:16px 0 0!important;padding:14px!important;background:#fee2e2!important;border:1px solid #dc2626!important;border-radius:14px!important;color:#7f1d1d!important;font-size:15px!important;line-height:20px!important;font-weight:500!important;text-align:start!important;box-shadow:none!important;z-index:auto!important;unicode-bidi:plaintext}
+.tmcS .ncBox:not([style*="none"]){display:flex!important;flex-direction:column!important;gap:0!important}
+.tmcS .ncBox>*,.tmcS .ncBox>div>*{display:block!important;margin:0!important;padding:0!important;font-size:15px!important;line-height:20px!important;flex:none!important;width:auto!important}
+.tmcS .ncBox b{font-size:17px!important;line-height:22px!important;font-weight:700!important;margin:0 0 4px!important}
+.tmcS .ncBox button{width:100%!important;height:58px!important;min-height:58px!important;margin:12px 0 0!important;padding:0 14px!important;font-size:18px!important;line-height:normal!important;font-weight:700!important;border:0!important;border-radius:12px!important;background:#dc2626!important;color:#fff!important}
+/*END TMC-SIGNIN*/
+.navBack{display:block!important;width:100%!important;min-height:58px!important;margin:6px 0 12px!important;padding:10px!important;font-size:18px!important;font-weight:700!important;text-align:center!important;background:#e5e7eb!important;color:#1f2937!important;border:0!important;border-radius:10px!important;box-shadow:none!important}@media print{.navBack{display:none!important}}.navAsk .card h2{font-size:24px}.navAsk .card button{min-height:60px;font-size:22px}
+</style></head><body>
+<div id="app"></div>
+<script>
+"use strict";
+(function(){
+const C=window.CONFIG,P=C.APP_ID+"_";            // every localStorage key starts with APP_ID_
+const CACHE_PREFIX=(C.CACHE_PREFIX||C.APP_ID)+"-v"; // every cache name starts with CACHE_PREFIX-v (default APP_ID)
+document.documentElement.style.setProperty("--c",C.COLOR);document.documentElement.style.setProperty("--cd",C.COLOR_DARK);document.documentElement.style.setProperty("--bg",C.BG);document.documentElement.style.setProperty("--rc",C.REPORT_COLOR||"#1B7F3B");
+const L={get:k=>localStorage.getItem(P+k),set:(k,v)=>localStorage.setItem(P+k,v),del:k=>localStorage.removeItem(P+k),
+  j:(k,d)=>{try{const v=localStorage.getItem(P+k);return v==null?d:JSON.parse(v)}catch(e){return d}},sj:(k,v)=>localStorage.setItem(P+k,JSON.stringify(v))};
+window.TMC={P:P,L:L};
+/* optional join link: .../#k=CODE → saved for this app only, then wiped from the address bar */
+(function(){const m=/(?:^#|&)k=([^&]+)/.exec(location.hash||"");if(!m)return;try{L.set("sycode",decodeURIComponent(m[1]).trim())}catch(e){}
+  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){location.hash=""}})();
+
+/* ---------------- Texts EN / FR / AR / AF. Arabic stays (Johan 10 Nov). Right-to-left when lang is ar. ---------------- */
+const T={en:{
+hello:"Hi",reports:"Reports",rpPick:"Choose a report",rpToday:"Today",rpMonth:"This month",rpDates:"Pick dates",rpFrom:"From",rpTo:"To",rpShow:"Show",rpXls:"📥 Download Excel",rpPrint:"🖨️ Print",rpBack:"⬅ Back",rpNone:"No data for these dates.",rpPeriod:"Period",rpDemo:"Notes per person",rpDate:"Date",rpPerson:"Person",rpNotes:"Notes",rpChars:"Letters",phTake:"📷 Take photo",phPick:"🖼️ Choose from phone",phDemo:"Photo (demo)",rpTot:"Total",rpItem:"Item",rpQty:"Count",name:"Your name",nameH:"Type your name",go:"Continue",needName:"Please type your name.",
+pinT:"Enter your PIN",pin:"PIN",pinWrong:"Wrong PIN. Try again.",pinLock:"Too many wrong PINs. Try again in %m min.",other:"Use a different name",
+setT:"Choose a PIN",setH:"4 to 6 numbers. You will use it every time.",pin2:"Type the PIN again",pinBad:"Use 4 to 6 numbers.",pinDiff:"The two PINs are not the same.",save:"Save",
+setupT:"First Admin setup",setupH:"You are the first user. Choose the Admin PIN.",
+waitT:"Waiting for approval",waitH:"%n, the Admin must approve you. Ask the Admin, then tap Check again.",check:"🔄 Check again",
+rejT:"Not approved",rejH:"The Admin did not approve this name. Ask the Admin.",blkT:"Blocked",blkH:"This name is blocked. Ask the Admin.",
+netT:"Internet needed",netH:"Connect to the internet once so the app can load the users.",retry:"🔄 Try again",loading:"Loading…",
+home:"Home",work:"Work",users:"Users",settings:"Settings",share:"Share app",syncNow:"🔄 Sync now",
+phT:"🧩 APP FEATURES GO HERE",phH:"This tab is a placeholder. Each app puts its own screens here.",exT:"Example note (demo)",exAdd:"Save note",fix:"✏️ Fix",fixT:"✏️ Fix a mistake (Admin)",fixSave:"💾 Save fix",fixOnly:"Only the Admin can fix a saved record.",fixRef:"⚠️ Your fix was not saved. Only the Admin can fix. Sign in as the Admin and try again.",fixed:"fixed by",can:"What I can do",canH:"Ticked = allowed. Ask the Admin to change it.",canEd:"✅ Allowed for",dupT:"Already asked - wait for Admin",dupH:"This name already asked once. Wait for the Admin. If you were approved, type your name and PIN to sign in.",canAdm:"⭐ Admin only: ✏️ Fix, 👥 Approve users",lkFix:"✏️ Fix",lkApp:"👥 Approve users",admOnly:"Admin only",canAll:"⭐ Admin: you can do everything.",noAccess:"You are not allowed to do this.",repT:"📊 Report",expT:"📤 Export",exNone:"No notes yet.",
+synced:"Synced",syncErr:"Sync problem",syncOff:"Sync not set up",offline:"Offline",last:"Last sync",
+pwT:"⚠️ %n change(s) not sent to the Sheet yet",pwOff:"No internet — they will be sent when you are online.",pwDel:"Tap 🔄 Sync now before deleting the app or clearing data, or these changes will be lost.",
+updT:"🆕 A new version is ready",updB:"⬆️ Update now",updChk:"Check for update",updNone:"You have the latest version.",updGo:"Updating… please wait",updGo2:"Do not close the app. Your saved work is kept.",ver:"Version",
+insBtn:"📲 Install app",insIos:"Tap Share ⬆️ then Add to Home Screen ➕",
+shareH:"Scan this code with the other phone, or send the link.",shareB:"📤 Send link",copy:"📋 Copy link",copied:"Copied",close:"Close",
+pend:"Waiting",act:"Approved",rej:"Rejected",blk:"Blocked",approve:"✅ Approve",reject:"❌ Reject",block:"⛔ Block",unblock:"↩️ Unblock",resetPin:"🔑 Reset PIN",admin:"Admin",noPend:"No one is waiting.",dscBT:"⛔ Block and remove %n?",dscRT:"❌ Reject and remove %n?",dscH:"%n is taken off the list. Their old PIN stops working. They can send a new request later.",dscY:"🗑️ Yes, remove",dscN:"↩️ Back",dscOld:"🗑️ Remove",dscDone:"%n was removed.",dscSelf:"You cannot remove yourself.",dscLast:"You cannot remove the last Admin.",dscMain:"The main Admin can never be removed, blocked, demoted or renamed.",dscTok:"Sign in again with your PIN to remove people.",goneT:"Not approved",goneH:"The Admin removed this request. You can send a new one.",again:"📨 Send a new request",
+lang:"Language",sync:"Sync",syncUrl:"Sync link",syncCode:"Sync code",sv:"Saved",logout:"🚪 Log out",logoutQ:"Log out %n?",
+logoutPend:"⚠️ %n change(s) are not sent yet. They stay on this phone and will be sent later. Log out anyway?",
+wipe:"🗑️ Clear this app on this phone",wipeQ:"Delete this app's data on this phone? Other apps are not touched.",wipePend:"⚠️ %n change(s) are NOT sent and will be LOST. Delete anyway?",
+draft:"Your unsaved text was kept.",ncT:"🔴 Not connected",ncH:"The app cannot reach the Sheet. Your work is kept on this phone and sent when it connects.",ncOff:"Sync link missing in this app. Tell the Admin."},
+fr:{
+hello:"Bonjour",reports:"Rapports",rpPick:"Choisir un rapport",rpToday:"Aujourd'hui",rpMonth:"Ce mois",rpDates:"Choisir les dates",rpFrom:"Du",rpTo:"Au",rpShow:"Afficher",rpXls:"📥 Télécharger Excel",rpPrint:"🖨️ Imprimer",rpBack:"⬅ Retour",rpNone:"Aucune donnée pour ces dates.",rpPeriod:"Période",rpDemo:"Notes par personne",rpDate:"Date",rpPerson:"Personne",rpNotes:"Notes",rpChars:"Lettres",phTake:"📷 Prendre une photo",phPick:"🖼️ Choisir dans le téléphone",phDemo:"Photo (démo)",rpTot:"Total",rpItem:"Élément",rpQty:"Nombre",name:"Votre nom",nameH:"Écrivez votre nom",go:"Continuer",needName:"Écrivez votre nom.",
+pinT:"Entrez votre PIN",pin:"PIN",pinWrong:"PIN incorrect. Réessayez.",pinLock:"Trop de PIN erronés. Réessayez dans %m min.",other:"Utiliser un autre nom",
+setT:"Choisissez un PIN",setH:"4 à 6 chiffres. Vous l'utiliserez à chaque fois.",pin2:"Retapez le PIN",pinBad:"Utilisez 4 à 6 chiffres.",pinDiff:"Les deux PIN ne sont pas pareils.",save:"Enregistrer",
+setupT:"Configuration de l'Admin",setupH:"Vous êtes le premier utilisateur. Choisissez le PIN Admin.",
+waitT:"En attente d'approbation",waitH:"%n, l'Admin doit vous approuver. Demandez à l'Admin, puis touchez Vérifier.",check:"🔄 Vérifier",
+rejT:"Non approuvé",rejH:"L'Admin n'a pas approuvé ce nom. Demandez à l'Admin.",blkT:"Bloqué",blkH:"Ce nom est bloqué. Demandez à l'Admin.",
+netT:"Internet nécessaire",netH:"Connectez-vous une fois à internet pour charger les utilisateurs.",retry:"🔄 Réessayer",loading:"Chargement…",
+home:"Accueil",work:"Travail",users:"Utilisateurs",settings:"Réglages",share:"Partager l'app",syncNow:"🔄 Synchroniser",
+phT:"🧩 LES FONCTIONS DE L'APP VONT ICI",phH:"Cet onglet est un emplacement. Chaque app y met ses écrans.",exT:"Note d'exemple (démo)",exAdd:"Enregistrer la note",fix:"✏️ Corriger",fixT:"✏️ Corriger une erreur (Admin)",fixSave:"💾 Enregistrer",fixOnly:"Seul l'Admin peut corriger un enregistrement.",fixRef:"⚠️ Votre correction n'est pas enregistrée. Seul l'Admin peut corriger. Connectez-vous comme Admin et réessayez.",fixed:"corrigé par",can:"Mes droits",canH:"Coché = autorisé. Demandez à l'Admin pour changer.",canEd:"✅ Autorisé pour",dupT:"Déjà demandé - attendez l'Admin",dupH:"Ce nom a déjà demandé. Attendez l'Admin. Si vous êtes accepté, tapez votre nom et PIN.",canAdm:"⭐ Admin seulement : ✏️ Corriger, 👥 Approuver",lkFix:"✏️ Corriger",lkApp:"👥 Approuver",admOnly:"Admin seulement",canAll:"⭐ Admin : vous pouvez tout faire.",noAccess:"Vous n'avez pas le droit de faire ceci.",repT:"📊 Rapport",expT:"📤 Exporter",exNone:"Pas encore de notes.",
+synced:"Synchronisé",syncErr:"Problème de synchro",syncOff:"Synchro non configurée",offline:"Hors ligne",last:"Dernière synchro",
+pwT:"⚠️ %n modification(s) pas encore envoyée(s) à la feuille",pwOff:"Pas d'internet — elles seront envoyées dès que vous serez en ligne.",pwDel:"Touchez 🔄 Synchroniser avant de supprimer l'application ou d'effacer les données, sinon ces modifications seront perdues.",
+updT:"🆕 Une nouvelle version est prête",updB:"⬆️ Mettre à jour",updChk:"Chercher une mise à jour",updNone:"Vous avez la dernière version.",updGo:"Mise à jour… veuillez patienter",updGo2:"Ne fermez pas l’app. Votre travail enregistré est gardé.",ver:"Version",
+insBtn:"📲 Installer l'application",insIos:"Touchez Partager ⬆️ puis Sur l'écran d'accueil ➕",
+shareH:"Scannez ce code avec l'autre téléphone, ou envoyez le lien.",shareB:"📤 Envoyer le lien",copy:"📋 Copier le lien",copied:"Copié",close:"Fermer",
+pend:"En attente",act:"Approuvé",rej:"Refusé",blk:"Bloqué",approve:"✅ Approuver",reject:"❌ Refuser",block:"⛔ Bloquer",unblock:"↩️ Débloquer",resetPin:"🔑 Réinitialiser PIN",admin:"Admin",noPend:"Personne n'attend.",dscBT:"⛔ Bloquer et retirer %n ?",dscRT:"❌ Refuser et retirer %n ?",dscH:"%n est retiré de la liste. Son ancien PIN ne marche plus. Il peut envoyer une nouvelle demande plus tard.",dscY:"🗑️ Oui, retirer",dscN:"↩️ Retour",dscOld:"🗑️ Retirer",dscDone:"%n a été retiré.",dscSelf:"Vous ne pouvez pas vous retirer vous-même.",dscLast:"Vous ne pouvez pas retirer le dernier Admin.",dscMain:"L'Admin principal ne peut jamais être retiré, bloqué, rétrogradé ni renommé.",dscTok:"Reconnectez-vous avec votre PIN pour retirer quelqu'un.",goneT:"Non approuvé",goneH:"L'Admin a retiré cette demande. Vous pouvez en envoyer une nouvelle.",again:"📨 Nouvelle demande",
+lang:"Langue",sync:"Synchro",syncUrl:"Lien de synchro",syncCode:"Code de synchro",sv:"Enregistré",logout:"🚪 Se déconnecter",logoutQ:"Déconnecter %n ?",
+logoutPend:"⚠️ %n modification(s) pas encore envoyée(s). Elles restent sur ce téléphone et seront envoyées plus tard. Se déconnecter quand même ?",
+wipe:"🗑️ Effacer cette app sur ce téléphone",wipeQ:"Effacer les données de cette app sur ce téléphone ? Les autres apps ne sont pas touchées.",wipePend:"⚠️ %n modification(s) NON envoyée(s) seront PERDUES. Effacer quand même ?",
+draft:"Votre texte non enregistré a été gardé.",ncT:"🔴 Pas connecté",ncH:"L'app n'arrive pas à joindre la feuille. Votre travail reste sur ce téléphone et sera envoyé à la connexion.",ncOff:"Lien de synchro absent dans cette app. Prévenez l'Admin."},
+ar:{
+hello:"مرحبا",reports:"التقارير",rpPick:"اختر تقريرا",rpToday:"اليوم",rpMonth:"هذا الشهر",rpDates:"اختر التواريخ",rpFrom:"من",rpTo:"إلى",rpShow:"عرض",
+rpXls:"📥 تنزيل Excel",rpPrint:"🖨️ طباعة",rpBack:"⬅ رجوع",rpNone:"لا توجد بيانات لهذه التواريخ.",rpPeriod:"الفترة",rpDemo:"الملاحظات لكل شخص",rpDate:"التاريخ",
+rpPerson:"الشخص",rpNotes:"الملاحظات",rpChars:"الحروف",phTake:"📷 التقط صورة",phPick:"🖼️ اختر من الهاتف",phDemo:"صورة (تجربة)",rpTot:"المجموع",rpItem:"البند",
+rpQty:"العدد",name:"اسمك",nameH:"اكتب اسمك",go:"متابعة",needName:"من فضلك اكتب اسمك.",pinT:"أدخل رمز PIN",pin:"PIN",pinWrong:"رمز خاطئ. حاول مرة أخرى.",
+pinLock:"رموز PIN خاطئة كثيرة. حاول مرة أخرى بعد %m دقيقة.",other:"استخدام اسم آخر",setT:"اختر رمز PIN",setH:"من 4 إلى 6 أرقام. ستستخدمه كل مرة.",
+pin2:"اكتب الرمز مرة أخرى",pinBad:"استخدم من 4 إلى 6 أرقام.",pinDiff:"الرمزان غير متطابقين.",save:"حفظ",setupT:"إعداد المسؤول الأول",
+setupH:"أنت أول مستخدم. اختر رمز المسؤول.",waitT:"بانتظار الموافقة",waitH:"%n، يجب أن يوافق المسؤول عليك. اسأل المسؤول ثم اضغط تحقق مرة أخرى.",
+check:"🔄 تحقق مرة أخرى",rejT:"غير موافق عليه",rejH:"لم يوافق المسؤول على هذا الاسم. اسأل المسؤول.",blkT:"محظور",blkH:"هذا الاسم محظور. اسأل المسؤول.",
+netT:"يلزم الإنترنت",netH:"اتصل بالإنترنت مرة واحدة ليتم تحميل المستخدمين.",retry:"🔄 حاول مرة أخرى",loading:"جار التحميل…",home:"الرئيسية",work:"العمل",
+users:"المستخدمون",settings:"الإعدادات",share:"مشاركة التطبيق",syncNow:"🔄 مزامنة الآن",phT:"🧩 ميزات التطبيق توضع هنا",
+phH:"هذا التبويب مكان مخصص. كل تطبيق يضع شاشاته هنا.",exT:"ملاحظة مثال (تجربة)",exAdd:"حفظ الملاحظة",fix:"✏️ تصحيح",fixT:"✏️ تصحيح خطأ (المدير)",
+fixSave:"💾 حفظ التصحيح",fixOnly:"المدير فقط يمكنه تصحيح سجل محفوظ.",fixRef:"⚠️ لم يتم حفظ التصحيح. المدير فقط يمكنه التصحيح. سجّل الدخول كمدير وحاول مرة أخرى.",
+fixed:"صححه",can:"ما يمكنني فعله",canH:"المؤشَّر = مسموح. اطلب من المدير التغيير.",canEd:"✅ مسموح لـ",dupT:"تم الطلب - انتظر المدير",
+dupH:"هذا الاسم طلب من قبل. انتظر المدير. إذا تمت الموافقة، اكتب اسمك والرقم السري.",canAdm:"⭐ للمدير فقط: ✏️ تصحيح، 👥 قبول المستخدمين",lkFix:"✏️ تصحيح",
+lkApp:"👥 قبول المستخدمين",admOnly:"للمدير فقط",canAll:"⭐ المدير: يمكنك فعل كل شيء.",noAccess:"غير مسموح لك بهذا.",repT:"📊 تقرير",expT:"📤 تصدير",
+exNone:"لا توجد ملاحظات بعد.",synced:"تمت المزامنة",syncErr:"مشكلة في المزامنة",syncOff:"المزامنة غير مُعدة",offline:"غير متصل",last:"آخر مزامنة",
+pwT:"⚠️ %n تغيير لم يُرسل إلى الجدول بعد",pwOff:"لا يوجد إنترنت — سيتم الإرسال عند الاتصال.",
+pwDel:"اضغط 🔄 مزامنة الآن قبل حذف التطبيق أو مسح البيانات، وإلا ستضيع هذه التغييرات.",updT:"🆕 نسخة جديدة جاهزة",updB:"⬆️ تحديث الآن",updChk:"البحث عن تحديث",
+updNone:"لديك آخر نسخة.",updGo:"جارٍ التحديث… يرجى الانتظار",updGo2:"لا تغلق التطبيق. عملك المحفوظ يبقى كما هو.",ver:"النسخة",insBtn:"📲 تثبيت التطبيق",
+insIos:"اضغط مشاركة ⬆️ ثم إضافة إلى الشاشة الرئيسية ➕",shareH:"امسح هذا الرمز بالهاتف الآخر، أو أرسل الرابط.",shareB:"📤 إرسال الرابط",copy:"📋 نسخ الرابط",
+copied:"تم النسخ",close:"إغلاق",pend:"بانتظار",act:"موافق عليه",rej:"مرفوض",blk:"محظور",approve:"✅ موافقة",reject:"❌ رفض",block:"⛔ حظر",
+unblock:"↩️ إلغاء الحظر",resetPin:"🔑 إعادة تعيين الرمز",admin:"مسؤول",noPend:"لا أحد بالانتظار.",dscBT:"⛔ حظر وإزالة %n؟",dscRT:"❌ رفض وإزالة %n؟",
+dscH:"يُزال %n من القائمة. لن يعمل رمزه القديم بعد الآن. يمكنه إرسال طلب جديد لاحقاً.",dscY:"🗑️ نعم، إزالة",dscN:"↩️ رجوع",dscOld:"🗑️ إزالة",
+dscDone:"تمت إزالة %n.",dscSelf:"لا يمكنك إزالة نفسك.",dscLast:"لا يمكنك إزالة آخر مسؤول.",
+dscMain:"لا يمكن أبدًا حذف المسؤول الرئيسي أو حظره أو تخفيض رتبته أو تغيير اسمه.",dscTok:"سجّل الدخول مجدداً برمزك لإزالة الأشخاص.",goneT:"غير موافق عليه",
+goneH:"أزال المسؤول هذا الطلب. يمكنك إرسال طلب جديد.",again:"📨 إرسال طلب جديد",lang:"اللغة",sync:"المزامنة",syncUrl:"رابط المزامنة",
+syncCode:"رمز المزامنة",sv:"تم الحفظ",logout:"🚪 تسجيل الخروج",logoutQ:"تسجيل خروج %n؟",
+logoutPend:"⚠️ %n تغيير لم يُرسل بعد. ستبقى على هذا الهاتف وتُرسل لاحقا. تسجيل الخروج على أي حال؟",wipe:"🗑️ مسح هذا التطبيق من هذا الهاتف",
+wipeQ:"حذف بيانات هذا التطبيق من هذا الهاتف؟ التطبيقات الأخرى لا تتأثر.",wipePend:"⚠️ %n تغيير لم يُرسل وسيضيع. الحذف على أي حال؟",
+draft:"تم الاحتفاظ بنصك غير المحفوظ.",ncT:"🔴 غير متصل",ncH:"لا يستطيع التطبيق الوصول إلى الجدول. عملك محفوظ على هذا الهاتف وسيُرسل عند الاتصال.",
+ncOff:"رابط المزامنة غير موجود في هذا التطبيق. أخبر المسؤول."},
+af:{
+hello:"Hallo",reports:"Verslae",rpPick:"Kies 'n verslag",rpToday:"Vandag",rpMonth:"Hierdie maand",rpDates:"Kies datums",rpFrom:"Van",rpTo:"Tot",rpShow:"Wys",rpXls:"📥 Laai Excel af",rpPrint:"🖨️ Druk",rpBack:"⬅ Terug",rpNone:"Niks vir hierdie datums nie.",rpPeriod:"Tydperk",rpDemo:"Notas per persoon",rpDate:"Datum",rpPerson:"Persoon",rpNotes:"Notas",rpChars:"Letters",phTake:"📷 Neem foto",phPick:"🖼️ Kies van foon",phDemo:"Foto (toets)",rpTot:"Totaal",rpItem:"Item",rpQty:"Aantal",name:"Jou naam",nameH:"Tik jou naam",go:"Gaan aan",needName:"Tik asseblief jou naam.",
+pinT:"Tik jou PIN",pin:"PIN",pinWrong:"Verkeerde PIN. Probeer weer.",pinLock:"Te veel verkeerde PINs. Probeer weer oor %m min.",other:"Gebruik 'n ander naam",
+setT:"Kies 'n PIN",setH:"4 tot 6 syfers. Jy gebruik dit elke keer.",pin2:"Tik die PIN weer",pinBad:"Gebruik 4 tot 6 syfers.",pinDiff:"Die twee PINs is nie dieselfde nie.",save:"Stoor",
+setupT:"Eerste Admin opstel",setupH:"Jy is die eerste gebruiker. Kies die Admin PIN.",
+waitT:"Wag vir die Admin",waitH:"%n, die Admin moet jou eers goedkeur. Vra die Admin, en tik dan Kyk weer.",check:"🔄 Kyk weer",
+rejT:"Nie goedgekeur nie",rejH:"Die Admin het hierdie naam nie goedgekeur nie. Vra die Admin.",blkT:"Geblok",blkH:"Hierdie naam is geblok. Vra die Admin.",
+netT:"Internet nodig",netH:"Gaan een keer op die internet sodat die app die gebruikers kan laai.",retry:"🔄 Probeer weer",loading:"Laai…",
+home:"Tuis",work:"Werk",users:"Mense",settings:"Instel",share:"Deel app",syncNow:"🔄 Sync nou",
+phT:"🧩 DIE APP SE DELE KOM HIER",phH:"Hierdie blad hou net plek. Elke app sit sy eie skerms hier.",exT:"Voorbeeld nota (toets)",exAdd:"Stoor nota",fix:"✏️ Maak reg",fixT:"✏️ Maak 'n fout reg (Admin)",fixSave:"💾 Stoor",fixOnly:"Net die Admin kan iets wat gestoor is regmaak.",fixRef:"⚠️ Jou regmaak is nie gestoor nie. Net die Admin kan iets regmaak. Teken in as die Admin en probeer weer.",fixed:"reggemaak deur",can:"Wat ek mag doen",canH:"Gemerk = mag. Vra die Admin om dit te verander.",canEd:"✅ Mag vir",dupT:"Klaar gevra - wag vir die Admin",dupH:"Hierdie naam het klaar gevra. Wag vir die Admin. As jy goedgekeur is, tik jou naam en PIN om in te gaan.",canAdm:"⭐ Net Admin: ✏️ Maak reg, 👥 Keur mense goed",lkFix:"✏️ Maak reg",lkApp:"👥 Keur mense goed",admOnly:"Net Admin",canAll:"⭐ Admin: jy mag alles doen.",noAccess:"Jy mag dit nie doen nie.",repT:"📊 Verslag",expT:"📤 Stuur uit",exNone:"Nog geen notas nie.",
+synced:"Sync klaar",syncErr:"Sync probleem",syncOff:"Sync nie opgestel nie",offline:"Geen internet",last:"Laaste sync",
+pwT:"⚠️ %n verandering(e) nog nie na die Sheet gestuur nie",pwOff:"Geen internet nie — dit gaan weg sodra jy weer internet het.",pwDel:"Tik 🔄 Sync nou voor jy die app uitvee of die data skoonmaak, anders gaan hierdie veranderinge verlore.",
+updT:"🆕 'n Nuwe weergawe is gereed",updB:"⬆️ Opdateer nou",updChk:"Kyk vir nuwe weergawe",updNone:"Jy het die nuutste weergawe.",updGo:"Opdateer… wag asseblief",updGo2:"Moenie die app toemaak nie. Jou gestoorde werk bly bewaar.",ver:"Weergawe",
+insBtn:"📲 Installeer app",insIos:"Tik Deel ⬆️ en dan Voeg by tuisskerm ➕",
+shareH:"Skandeer hierdie kode met die ander foon, of stuur die skakel.",shareB:"📤 Stuur skakel",copy:"📋 Kopieer skakel",copied:"Gekopieer",close:"Maak toe",
+pend:"Wag",act:"Goedgekeur",rej:"Afgekeur",blk:"Geblok",approve:"✅ Keur goed",reject:"❌ Keur af",block:"⛔ Blok",unblock:"↩️ Ontblok",resetPin:"🔑 Nuwe PIN",admin:"Admin",noPend:"Niemand wag nie.",dscBT:"⛔ Blok en verwyder %n?",dscRT:"❌ Keur af en verwyder %n?",dscH:"%n word van die lys afgehaal. Hulle ou PIN werk nie meer nie. Hulle kan later weer 'n versoek stuur.",dscY:"🗑️ Ja, verwyder",dscN:"↩️ Terug",dscOld:"🗑️ Verwyder",dscDone:"%n is verwyder.",dscSelf:"Jy kan nie jouself verwyder nie.",dscLast:"Jy kan nie die laaste Admin verwyder nie.",dscMain:"Die hoof-Admin kan nooit verwyder, geblok, afgegradeer of hernoem word nie.",dscTok:"Teken weer in met jou PIN om mense te verwyder.",goneT:"Nie goedgekeur nie",goneH:"Die Admin het hierdie versoek verwyder. Jy kan 'n nuwe een stuur.",again:"📨 Stuur nuwe versoek",
+lang:"Taal",sync:"Sync",syncUrl:"Sync skakel",syncCode:"Sync kode",sv:"Gestoor",logout:"🚪 Teken uit",logoutQ:"Teken %n uit?",
+logoutPend:"⚠️ %n verandering(e) is nog nie gestuur nie. Dit bly op hierdie foon en gaan later weg. Teken tog uit?",
+wipe:"🗑️ Vee hierdie app op hierdie foon uit",wipeQ:"Vee hierdie app se data op hierdie foon uit? Ander apps bly soos hulle is.",wipePend:"⚠️ %n verandering(e) is NIE gestuur nie en gaan VERLORE. Vee tog uit?",
+draft:"Jou teks wat nie gestoor was nie, is gehou.",ncT:"🔴 Nie gekoppel nie",ncH:"Die app kan nie by die Sheet kom nie. Jou werk bly op hierdie foon en gaan weg sodra dit koppel.",ncOff:"Die sync skakel is nie in hierdie app nie. Sê vir die Admin."}};
+let lang=L.get("lang");if(lang&&!T[lang]){lang="en";L.set("lang","en")}   // unknown language → English, saved
+if(!lang){const nl=(navigator.language||"en").slice(0,2).toLowerCase();lang=T[nl]?nl:"en"}
+if(!T[lang])lang="en";
+const t=k=>(T[lang]&&T[lang][k]!=null)?T[lang][k]:(T.en[k]!=null?T.en[k]:k);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=id=>document.getElementById(id);
+/* VER 8 (Johan 31 Oct 2026): every time is 24-hour HH:MM (18:05), never AM/PM or seconds, in every language and whatever the phone is set to */
+const p2=n=>(n<10?"0":"")+n,hm=d=>p2(d.getHours())+":"+p2(d.getMinutes());
+const dLoc=()=>lang==="af"?"af-ZA":lang==="fr"?"fr-FR":lang==="ar"?"ar-TD-u-nu-latn":"en-GB";
+window.TMC.hm=hm;
+function applyLang(){document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";document.title=C.NAME}
+window.TMC.T=T;window.TMC.t=t;
+const LANGS=["en","fr","ar","af"],langName=l=>l==="en"?"English":l==="fr"?"Français":l==="ar"?"العربية":"Afrikaans";
+
+/* ---------------- Name rule (shared by all TMC apps) ---------------- */
+const ADMIN_KEY=C.ADMIN_ALIASES[0];
+const NK=x=>{const n=String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[\s.]+/g,"");return C.ADMIN_ALIASES.indexOf(n)>=0?ADMIN_KEY:n};
+const clean=x=>String(x||"").trim().replace(/\s+/g," ");
+window.TMC.NK=NK;
+
+/* ---------------- Records + sync ---------------- */
+let R=L.j("recs",{}),dirty=L.j("dirty",{});
+let dev=L.get("dev");if(!dev){dev="d"+Math.random().toString(36).slice(2,10);L.set("dev",dev)}
+const saveR=()=>{L.sj("recs",R);L.sj("dirty",dirty)};
+const all=kind=>Object.keys(R).map(k=>R[k]).filter(r=>r.kind===kind&&!r.del).map(r=>r.data);
+/* ADMIN FIX RULE: staff may only ADD. Changing/deleting an existing record (not "u") is Admin-only; the server enforces it too. */
+/* PERMISSIONS: the Admin ticks what each person may do (CONFIG.PERMS). Admin = everything. The server checks too. */
+function permsOf(u){return u&&Array.isArray(u.perms)?u.perms:(C.PERM_DEFAULT||[])}
+function can(p,u){u=u||me();return !!u&&(!!u.admin||permsOf(u).indexOf(p)>=0)}
+function canKind(kind,what,u){const k=(C.PERM_KINDS||{})[kind];return !k||!k[what]||can(k[what],u)}
+function permLab(p){return p[lang]||p.en}
+/* VER 6 ADMIN FIX RULE (phone): role + token decide, never the team code alone. Admin with a token = fix, even if a team code is saved.
+   A team-code phone with no token counts as staff (the server refuses its fixes). See tests/admin_fix_test_spec.md. */
+function canFix(){const m=me();if(!(m&&m.admin))return false;return !!(sTok()||!sCode())}
+function put(kind,id,data){if(updLock){toast(t("updGo"));return false}const k=kind+":"+id;if(kind==="u"&&R[k]&&!R[k].del&&isMain(R[k].data)&&!mainKept(data)){toast(t("dscMain"));return false}if(kind!=="u"&&R[k]&&!R[k].del&&!canFix()){alert(t("fixOnly"));return false}if(kind!=="u"&&!R[k]&&!canKind(kind,"add")){alert(t("noAccess"));return false}const u=Math.max(Date.now(),R[k]?R[k].u+1:0);R[k]={kind:kind,id:String(id),u:u,del:0,data:data};dirty[k]=1;saveR();syncSoon();return true}
+function remove(kind,id){if(updLock){toast(t("updGo"));return false}const k=kind+":"+id;if(kind==="u")return false;if(kind!=="u"&&!canFix()){alert(t("fixOnly"));return false}const u=Math.max(Date.now(),R[k]?R[k].u+1:0);R[k]={kind:kind,id:String(id),u:u,del:1,data:null};dirty[k]=1;saveR();syncSoon();return true}
+/* fix(): Admin changes one field; old value, Admin name and time are kept in data._fix (audit column) and the server "Fix log" tab. */
+function fix(kind,id,field,val){if(!canFix())return false;const k=kind+":"+id,r=R[k];if(!r||r.del)return false;const d=Object.assign({},r.data),old=d[field];if(String(old)===String(val))return true;
+  d._fix=(Array.isArray(d._fix)?d._fix:[]).concat([{f:field,old:old,by:me().name,at:new Date().toISOString()}]);d[field]=val;return put(kind,id,d)!==false}
+function fixBtn(kind,id,field){return canFix()?`<button type="button" class="fixB" data-k="${esc(kind)}" data-i="${esc(id)}" data-f="${esc(field)}">${esc(t("fix"))}</button>`:""}
+function fixedNote(d){const f=d&&Array.isArray(d._fix)&&d._fix[d._fix.length-1];return f?`<span class="hint fixN">✏️ ${esc(t("fixed"))} ${esc(f.by)} · ${esc(String(f.at).slice(0,16).replace("T"," "))}</span>`:""}
+function bindFix(){if(!canFix())return;document.querySelectorAll(".fixB").forEach(b=>b.onclick=()=>{const kind=b.dataset.k,id=b.dataset.i,f=b.dataset.f,r=R[kind+":"+id];if(!r)return;
+  const m=document.createElement("div");m.className="modal";m.innerHTML=`<div class="card"><h2>${esc(t("fixT"))}</h2><textarea id="fixV" rows="3" spellcheck="true" autocorrect="on"></textarea><button type="button" id="fixS">${esc(t("fixSave"))}</button><button type="button" class="sec" id="fixX">${esc(t("close"))}</button></div>`;
+  document.body.appendChild(m);$("fixV").value=r.data[f]==null?"":String(r.data[f]);const x=()=>m.remove();$("fixX").onclick=x;
+  $("fixS").onclick=()=>{const v=$("fixV").value.trim();if(!v)return;fix(kind,id,f,v);x();render()}})}
+window.TMC.fix=fix;window.TMC.canFix=canFix;window.TMC.fixBtn=fixBtn;window.TMC.bindFix=bindFix;window.TMC.fixedNote=fixedNote;
+window.TMC.can=can;window.TMC.canKind=canKind;window.TMC.permsOf=permsOf;
+window.TMC.put=put;window.TMC.remove=remove;window.TMC.all=all;
+const sUrl=()=>L.get("syurl")||C.SYNC_URL,sCode=()=>L.get("sycode")||C.SYNC_CODE;
+const sTok=()=>L.get("tok")||"";
+const tokMode=()=>!!(sUrl()&&!sCode());           // VER 4: no code → name+PIN session token
+const syncOn=()=>!!(sUrl()&&(sCode()||sTok()));
+let netBad=false;                                   // true only when the server can't be reached or rejects us
+function api(body){return fetch(sUrl(),{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({device:dev},body))})
+  .then(r=>r.json()).then(j=>{netBad=false;paintSync();return j},e=>{netBad=true;paintSync();throw e})}
+window.TMC.api=api;
+const pending=()=>Object.keys(dirty).length;
+let sState="",busy=null,tmr=null,fails=0;
+function syncSoon(ms){clearTimeout(tmr);tmr=setTimeout(()=>syncNow(),ms==null?800:ms)}
+let relog=null,relogNo=0,force={};
+function syncNow(){
+  // token phone signed in offline (or token lost): get a new token with this phone's own stored PIN hash
+  // VER 6: an Admin on a team-code phone also gets its own token (so its fixes count as Admin). If that fails, it keeps syncing by code.
+  const adm=me(),codeAdm=!tokMode()&&sUrl()&&sCode()&&adm&&adm.admin&&adm.pinH&&!relogNo;
+  if((tokMode()||codeAdm)&&!sTok()){const u=me();if(!u||!u.pinH)return Promise.resolve(false);
+    if(!relog)relog=api({action:"login",id:u.id,pinH:u.pinH}).then(j=>{relog=null;if(j&&j.ok){L.set("tok",j.token);return syncNow()}if(codeAdm){relogNo=1;return syncNow()}if(j&&j.error!=="locked"){signOut();render()}return false},()=>{relog=null;if(codeAdm){relogNo=1;return syncNow()}syncSoon(30000);return false});
+    return relog}
+  if(!syncOn())return Promise.resolve(false);
+  if(busy)return busy;
+  const keys=Object.keys(dirty),sent={};
+  const changes=keys.map(k=>{const r=R[k];sent[k]=r.u;return {kind:r.kind,id:r.id,u:r.u,del:r.del,data:r.data}});
+  sState="busy";paintSync();
+  busy=fetch(sUrl(),{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"sync",code:sTok()?undefined:(sCode()||undefined),token:sTok()||undefined,device:dev,since:+(L.get("since")||0),changes:changes})})
+  .then(r=>r.json()).then(j=>{
+    if(j&&!j.ok&&(j.error==="bad_token"||j.error==="not_active")){const hadTok=!!sTok();L.del("tok");if(sCode()&&hadTok){relogNo=0;syncSoon(300)}else if(tokMode()&&hadTok)syncSoon(300)}  // VER 7: re-check now (a discarded user is signed out at once)
+    if(!j||!j.ok)throw new Error(j&&j.error||"sync");
+    Object.keys(sent).forEach(k=>{if(R[k]&&R[k].u===sent[k])delete dirty[k]});
+    const F=force;force={};
+    (j.records||[]).forEach(s=>{const k=s.kind+":"+s.id,u=+s.u||0,loc=R[k];if(F[k]&&!dirty[k]){delete F[k]}else if(loc&&(loc.u>u||(dirty[k]&&loc.u>=u)))return;
+      let d=s.data;if(typeof d==="string"){try{d=d?JSON.parse(d):null}catch(e){d=null}}if(s.kind==="u"&&(s.del||!d)&&loc&&!loc.del&&!(s.del&&d&&d.discarded===1))return;if(s.kind==="u"&&d&&!d.pinH&&d.hasPin&&!d.pinReset&&loc&&loc.data&&loc.data.pinH){d.pinH=loc.data.pinH;d.salt=loc.data.salt}R[k]={kind:s.kind,id:String(s.id),u:u,del:s.del?1:0,data:d}});
+    L.set("since",String(j.now||Date.now()));L.set("lastOk",String(Date.now()));saveR();fails=0;sState="ok";netBad=false;
+    /* VER 6: the server refused a fix (admin_only_fix): tell the user and take the server copy back, so no phone keeps a fix only it has */
+    if(j.refused&&Array.isArray(j.refusedDiscard)&&j.refusedDiscard.length){j.refusedDiscard.forEach(id=>{if(!dirty["u:"+id])force["u:"+id]=1});L.set("since","0");toast(t(j.refusedWhy==="main_admin"?"dscMain":j.refusedWhy==="last_admin"?"dscLast":j.refusedWhy==="self"?"dscSelf":"dscTok"));syncSoon(200)}
+    else if(j.refused&&j.refusedWhy==="admin_only_fix"){Object.keys(sent).forEach(k=>{if(k.indexOf("u:")!==0&&!dirty[k])force[k]=1});L.set("since","0");toast(t("fixRef"));syncSoon(200)}
+    return true})
+  .catch(e=>{fails++;sState="err";netBad=true;syncSoon(navigator.onLine?Math.min(120000,5000*Math.pow(2,fails-1)):60000);return false})
+  .then(ok=>{busy=null;paintSync();if(ok)phSoon(1000);try{onData()}catch(e){console.warn(e)}if(ok&&pending())syncSoon(300);return ok});
+  return busy;
+}
+/* Restore a backup: MERGES records only. Never removes users or any record; a backup with no users keeps the current users. */
+function restoreBackup(b){const recs=Array.isArray(b)?b:(b&&(b.records||b.R))||[];const list=Array.isArray(recs)?recs:Object.keys(recs).map(k=>recs[k]);let n=0;
+  list.forEach(s=>{if(!s||!s.kind||s.id==null||s.del)return;let d=s.data;if(typeof d==="string"){try{d=JSON.parse(d)}catch(e){return}}if(d==null||typeof d!=="object")return;
+    const k=s.kind+":"+s.id,loc=R[k];if(loc&&!loc.del&&(+s.u||0)<=loc.u)return;if(s.kind==="u"&&loc&&!loc.del)return;
+    R[k]={kind:s.kind,id:String(s.id),u:Math.max(+s.u||0,loc?loc.u+1:0),del:0,data:d};dirty[k]=1;n++});
+  saveR();syncSoon();return n}
+window.TMC.restoreBackup=restoreBackup;
+window.TMC.syncNow=syncNow;window.TMC.pending=pending;
+addEventListener("online",()=>syncSoon(100));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){syncSoon(100);checkUpdate()}});
+setInterval(()=>{if(!document.hidden)syncNow()},60000);
+
+/* ---------------- Users / session ---------------- */
+const users=()=>all("u");
+const approved=u=>u&&u.status==="active";
+const hasAdmin=()=>users().some(u=>approved(u)&&u.admin);
+async function H(pin,salt){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+":"+pin));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("")}
+function me(){const id=L.get("uid"),ok=L.get("uok");if(!id||!ok)return null;const u=users().find(x=>x.id===id);if(!u||!approved(u)||ok!==u.id+":"+u.pinH)return null;return u}
+window.TMC.me=me;
+function signOut(){L.del("uid");L.del("uok");L.del("tok");relogNo=0}  // VER 6: always drop the token, so the next person on this phone never gets the Admin's token
+function fails_(k){const F=L.j("pinFail",{}),now=Date.now();return (F[k]||[]).filter(x=>now-x<36e5)}
+function addFail(k){const F=L.j("pinFail",{});F[k]=fails_(k).concat([Date.now()]);L.sj("pinFail",F)}
+function clearFail(k){const F=L.j("pinFail",{});delete F[k];L.sj("pinFail",F)}
+
+/* ---------------- Screens ---------------- */
+let tab="home",flow=null; // flow = sign-in sub-screen
+function card(inner){return `<div class="full"><div class="signin"><div class="card"><img class="logo" src="icons/icon-192.png" alt="">${inner}${insHTML()}</div><div id="ncW" class="bar ncW ncBox"></div></div></div>`}
+function langBtns(){return `<div class="langs"><select id="langSel" aria-label="Language">${LANGS.map(l=>`<option value="${l}"${l===lang?" selected":""}>🌐 ${langName(l)}</option>`).join("")}</select></div>`}
+function pinInput(id,ph){return `<div class="pw"><input id="${id}" name="${C.APP_ID}-${id}-${Math.random().toString(36).slice(2,7)}" class="msk" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-form-type="other" placeholder="${esc(ph)}"><button type="button" class="eye" data-eye="${id}">👁</button></div>`}
+/* Redraw guard: once the user types or ticks in a form, a background sync does not redraw (and wipe) it.
+   The new data shows on the next render() (Save, Back, tab change). Fields marked data-nodirty and the language picker don't count. */
+let formDirty=0;document.addEventListener("input",e=>{const el=e.target;if(el&&el.closest&&el.closest("#app")&&!el.dataset.nodirty&&el.id!=="langSel"&&/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))formDirty=1},true);
+window.TMC.formDirty=()=>formDirty;
+function render(){
+  formDirty=0;applyLang();const A=$("app");
+  const u=me();
+  if(!u){A.innerHTML=signinHTML();bindSignin();return}
+  flow=null;
+  if(tab==="users"&&!u.admin)tab="home";if(tab==="work"&&!workOk(u))tab="home";if(tab==="reports"&&!(repOk(u)&&REPORTS.length))tab="home";
+  A.innerHTML=`<header id="hBand"><img class="asLogo" src="icons/icon-192.png" alt="TMC Assets" width="36" height="36"><div class="t">${esc(C.SHORT)}</div><span class="hS" id="hS"><span id="sDot" class="dot"></span><span id="sTime" class="sTime"></span></span><select id="hLang" class="hLang" aria-label="Language">${LANGS.map(l=>`<option value="${l}"${l===lang?" selected":""}>${l.toUpperCase()}</option>`).join("")}</select></header>
+  <main><div id="ncW" class="bar ncW"></div><div id="updW" class="bar updW"></div><div id="pendW" class="bar pendW"></div><div id="view">${viewHTML(u)}</div></main>
+  <nav class="tabs">${tabsOf(u).map(x=>navBtn(...x)).join("")}</nav>`;
+  bindMain(u);paintSync();paintUpd();fitTabs();
+}
+/* ONE list feeds the bottom tabs AND the Home tiles (same screens, icons, names, order) */
+function asLogo(sz){return `<img class="asLogo" src="icons/icon-192.png" alt="" width="${sz}" height="${sz}">`}
+function tabsOf(u){return [["home","🏠"],...(workOk(u)?[["work",asLogo(24)]]:[]),...(repOk(u)&&REPORTS.length?[["reports","📊"]]:[]),["can","✅"],...(u.admin?[["users","👥",users().filter(x=>x.status==="pending").length]]:[]),["settings","⚙️"]]}
+function repOk(u){u=u||me();return !!u&&(!!u.admin||can("reports",u))}
+function workOk(u){return (C.PERMS||[]).length===0||["view","add","reports","export"].some(p=>can(p,u))}
+function navBtn(k,ic,n){return `<button type="button" data-tab="${k}" class="${tab===k?"on":""}"><span class="ticon">${ic}</span><span class="tlab">${esc(t(k))}</span>${n?`<span class="badge">${n}</span>`:""}</button>`}
+function fitTabs(){document.querySelectorAll("nav.tabs .tlab").forEach(el=>{el.style.fontSize="";let fs=parseFloat(getComputedStyle(el).fontSize)||12;while(el.scrollWidth>el.clientWidth+0.5&&fs>7){fs=Math.round((fs-0.5)*10)/10;el.style.fontSize=fs+"px"}})}
+addEventListener("resize",fitTabs);
+window.TMC.render=render;
+
+function signinHTML(){
+  const f=flow||{s:"name"};
+  if(f.s==="loading")return card(`<h2>${esc(t("loading"))}</h2>`);
+  if(f.s==="net")return card(`<h2>📶 ${esc(t("netT"))}</h2><p class="hint">${esc(t("netH"))}</p><button type="button" id="fRetry">${esc(t("retry"))}</button><button type="button" class="sec" id="fOther">${esc(t("other"))}</button>`);
+  if(f.s==="pin")return card(`<h2>${esc(t("pinT"))}</h2><p><b>${esc(f.u.name)}</b></p>${pinInput("fPin",t("pin"))}<p class="err" id="fErr"></p><button type="button" id="fGo">${esc(t("go"))}</button><button type="button" class="sec" id="fOther">${esc(t("other"))}</button>`);
+  if(f.s==="set")return card(`<h2>${esc(f.setup?t("setupT"):t("setT"))}</h2><p><b>${esc(f.u.name)}</b></p><p class="hint">${esc(f.setup?t("setupH"):t("setH"))}</p>${pinInput("fPin",t("pin"))}${pinInput("fPin2",t("pin2"))}<p class="err" id="fErr"></p><button type="button" id="fSet">${esc(t("save"))}</button><button type="button" class="sec" id="fOther">${esc(t("other"))}</button>`);
+  if(f.s==="wait")return card(`<h2>⏳ ${esc(t("waitT"))}</h2><p class="hint">${esc(t("waitH").replace("%n",f.name))}</p><button type="button" id="fCheck">${esc(t("check"))}</button><button type="button" class="sec" id="fOther">${esc(t("other"))}</button>`);
+  if(f.s==="dup")return card(`<h2 id="dupT">✋ ${esc(t("dupT"))}</h2><p class="hint" style="font-size:18px">${esc(t("dupH"))}</p><button type="button" id="fCheck" style="min-height:60px">${esc(t("check"))}</button><button type="button" class="sec" id="fOther" style="min-height:60px">${esc(t("other"))}</button>`);
+  if(f.s==="gone")return card(`<h2 id="goneT">❌ ${esc(t("goneT"))}</h2><p class="hint" style="font-size:18px">${esc(t("goneH"))}</p><button type="button" id="fAgain" style="min-height:60px">${esc(t("again"))}</button><button type="button" class="sec" id="fOther" style="min-height:60px">${esc(t("other"))}</button>`);
+  if(f.s==="rej")return card(`<h2>❌ ${esc(t("rejT"))}</h2><p class="hint">${esc(t("rejH"))}</p><button type="button" class="sec" id="fOther">${esc(t("other"))}</button>`);
+  if(f.s==="blk")return card(`<h2>⛔ ${esc(t("blkT"))}</h2><p class="hint">${esc(t("blkH"))}</p><button type="button" class="sec" id="fOther">${esc(t("other"))}</button>`);
+  return `<div class="full tmcS" style="--tmcS-c:${esc(C.COLOR)};--tmcS-cd:${esc(C.COLOR_DARK)}"><div class="signin"><div class="card"><img class="tmcS-logo logo" src="icons/icon-192.png" width="84" height="84" alt=""><h2 class="tmcS-t">${esc(C.NAME)}</h2><select id="langSel" class="tmcS-lang" aria-label="Language">${LANGS.map(l=>`<option value="${l}"${l===lang?" selected":""}>🌐 ${langName(l)}</option>`).join("")}</select><input id="fName" class="tmcS-name" name="${C.APP_ID}-who" type="text" autocomplete="off" autocapitalize="words" spellcheck="true" autocorrect="on" data-lpignore="true" data-1p-ignore="true" placeholder="${esc(t("nameH"))}" value="${esc(L.get("lastName")||"")}"><p class="err tmcS-err" id="fErr"></p><button type="button" id="fName2" class="tmcS-go">${esc(t("go"))}</button>${insHTML()}</div><div id="ncW" class="bar ncW ncBox" role="alert"></div></div></div>`;
+}
+function err(m){const e=$("fErr");if(e){e.textContent=m;e.style.display="block"}}
+function bindCommon(){
+  document.querySelectorAll("#langSel").forEach(b=>b.onchange=()=>{lang=b.value;L.set("lang",lang);render()});
+  document.querySelectorAll("[data-eye]").forEach(b=>b.onclick=()=>{const i=$(b.dataset.eye);i.classList.toggle("shw")});
+  bindIns();
+}
+function bindSignin(){
+  bindCommon();
+  const on=(id,f)=>{const e=$(id);if(e)e.onclick=f};
+  on("fOther",()=>{flow=null;render()});
+  on("fName2",()=>startName($("fName").value));
+  const n=$("fName");if(n)n.onkeydown=e=>{if(e.key==="Enter")startName(n.value)};
+  on("fRetry",()=>startName(flow.name));
+  on("fCheck",()=>{if(tokMode())return srvLookup(flow.name,false);const nm=flow.name;syncNow().then(()=>{const K=NK(nm);if(!users().some(u=>NK(u.name)===K)){flow={s:"gone",name:nm};return render()}lookup(nm)})});  // VER 7: request discarded → offer a fresh one
+  on("fAgain",()=>startName(flow.name));
+  on("fGo",checkPin);on("fSet",setPin);
+  const p=$("fPin");if(p){p.focus();p.onkeydown=e=>{if(e.key==="Enter")(flow.s==="pin"?checkPin:setPin)()}}
+}
+/* VER 4 token flow: ask the script who this name is (works on a fresh phone with no code) */
+async function startName(raw){
+  const name=clean(raw);if(!name)return err(t("needName"));
+  L.set("lastName",name);
+  if(tokMode())return srvLookup(name,true);
+  // fresh phone / reinstall: pull everything from the Sheet BEFORE matching the name
+  if(syncOn()&&!(+(L.get("since")||0)>0)){flow={s:"loading",name:name};render();await syncNow();
+    if(!(+(L.get("since")||0)>0)&&!users().length){flow={s:"net",name:name};render();return}}
+  lookup(name);
+}
+async function srvLookup(name,reg){
+  flow={s:"loading",name:name};render();
+  let j;try{j=await api({action:"status",name:name});if(j&&j.ok&&j.state==="none"&&reg)j=await api({action:"register",name:name})}catch(e){j=null}
+  if(!j||!j.ok){if(users().length)return lookup(name,true);flow={s:"net",name:name};return render()}
+  const st=j.state;
+  if(st==="active"){const u=users().find(x=>x.id===j.id)||{id:j.id,name:j.name};flow={s:j.hasPin?"pin":"set",u:Object.assign({},u,{name:j.name,salt:j.salt||u.salt}),name:name,srv:1};return render()}
+  if(st==="setup"){flow={s:"set",setup:true,u:{id:"",name:C.ADMIN_NAME},name:name,srv:1};return render()}
+  if(st==="blocked"){flow={s:"blk",name:name};return render()}
+  if(st==="rejected"){flow={s:"rej",name:name};return render()}
+  if(st==="dup"||(st==="pending"&&j.other)){flow={s:"dup",name:name,srv:1};return render()}  // ONE request per name per app
+  if(st==="none"&&!reg){flow={s:"gone",name:name};return render()}  // VER 7: the Admin discarded this request
+  flow={s:"wait",name:name,srv:1};render();
+}
+async function gotToken(j,u){
+  L.set("tok",j.token);L.del("since");await syncNow();
+  const me_=users().find(x=>x.id===j.id);
+  if(!me_){flow={s:"net",name:flow&&flow.name};return render()}
+  if(!me_.pinH&&u&&u.pinH){me_.pinH=u.pinH;me_.salt=u.salt;saveR()}
+  L.set("uid",me_.id);L.set("uok",me_.id+":"+me_.pinH);tab="home";flow=null;render();
+}
+function lookup(name,localOnly){
+  if(tokMode()&&!localOnly)return srvLookup(name,true);
+  const K=NK(name),all_=users().filter(u=>NK(u.name)===K),ok=all_.filter(approved);
+  if(ok.length===1){if(!ok[0].pinH&&ok[0].hasPin&&!tokMode()&&navigator.onLine&&!localOnly)return srvLookup(name,true);if((tokMode()||ok[0].hasPin)&&!ok[0].pinH){flow={s:"net",name:name};return render()}  // token phones only hold their own PIN hash
+    flow={s:ok[0].pinH?"pin":"set",u:ok[0],name:name};return render()}
+  if(ok.length===0){
+    if(all_.some(u=>u.status==="blocked")){flow={s:"blk",name:name};return render()}
+    if(all_.some(u=>u.status==="rejected")){flow={s:"rej",name:name};return render()}
+    if(!hasAdmin()&&K===ADMIN_KEY){flow={s:"set",setup:true,u:{id:"u"+Date.now(),name:C.ADMIN_NAME,status:"active",admin:1,dev:dev,at:new Date().toISOString()},name:name};return render()}
+  }
+  // no single approved match (none, or 2+ sharing the key): a normal approval request
+  if(tokMode()){flow={s:"net",name:name};return render()}  // token phones register on the server only
+  const own=users().find(u=>u.status==="pending"&&NK(u.name)===K&&(ok.length<2||(u.dev===dev&&clean(u.name).toLowerCase()===name.toLowerCase())));
+  if(!own&&ok.length<2&&users().some(u=>NK(u.name)===K&&(u.status==="pending"||u.status==="active"))){flow={s:"dup",name:name};return render()}  // ONE request per name per app
+  if(!own){const r={id:"r"+Date.now(),name:name,status:"pending",dev:dev,at:new Date().toISOString()};put("u",r.id,r)}
+  flow={s:"wait",name:name};render();
+}
+async function checkPin(){
+  const u=flow.u,k=NK(u.name),v=$("fPin").value;
+  let F=fails_(k);
+  if(F.length>=5){$("fPin").value="";return err(t("pinLock").replace("%m",Math.max(1,Math.ceil((F[0]+36e5-Date.now())/6e4))))}
+  if(flow.srv&&navigator.onLine){let j=null;try{j=await api({action:"login",id:u.id,pinH:await H(v,u.salt)})}catch(e){}
+    if(j&&j.ok){clearFail(k);return gotToken(j,Object.assign({},u,{pinH:await H(v,u.salt)}))}
+    if(j){addFail(k);$("fPin").value="";return err(j.error==="locked"?t("pinLock").replace("%m",Math.max(1,Math.ceil(((j.until||Date.now()+36e5)-Date.now())/6e4))):t("pinWrong"))}}
+  if(u.pinH&&await H(v,u.salt)===u.pinH){clearFail(k);L.set("uid",u.id);L.set("uok",u.id+":"+u.pinH);tab="home";flow=null;render();return}
+  addFail(k);F=fails_(k);$("fPin").value="";
+  err(F.length>=5?t("pinLock").replace("%m",60):t("pinWrong"));
+}
+async function setPin(){
+  const a=$("fPin").value,b=$("fPin2").value;
+  if(!/^[0-9]{4,6}$/.test(a))return err(t("pinBad"));if(a!==b)return err(t("pinDiff"));
+  const u=Object.assign({},flow.u),salt=Math.random().toString(36).slice(2,12);u.salt=salt;u.pinH=await H(a,salt);
+  if(flow.srv){let j=null;try{j=await api({action:"setpin",id:u.id,setup:flow.setup?1:0,name:flow.name,salt:salt,pinH:u.pinH})}catch(e){}
+    if(j&&j.ok)return gotToken(j,u);return err(j?j.error:t("ncT"))}
+  put("u",u.id,u);L.set("uid",u.id);L.set("uok",u.id+":"+u.pinH);tab="home";flow=null;render();
+}
+
+/* ---------------- Main views ---------------- */
+function viewHTML(u){
+  if(tab==="work")return workHTML(u);
+  if(tab==="users")return usersHTML(u);
+  if(tab==="settings")return settingsHTML(u);
+  if(tab==="can")return canHTML(u);
+  if(tab==="reports")return repScreenHTML(u);
+  const np=users().filter(x=>x.status==="pending").length;
+  return `<div class="box hhero" id="hHero"><img src="icons/icon-192.png" alt="" width="64" height="64"><div><h2>${esc(C.NAME)}</h2><div id="hDate">${esc(new Date().toLocaleDateString(dLoc(),{weekday:"long",day:"numeric",month:"long",year:"numeric"}))}</div><div class="hhi" id="hHello">👋 ${esc(t("hello"))}, ${esc(u.name)}</div></div></div><button type="button" class="sec loBand" id="hOut">${esc(t("logout"))}</button>
+  <div class="tiles">${tabsOf(u).filter(x=>x[0]!=="home").map(([k,ic,n])=>`<button type="button" class="tile" data-tab="${k}"${k==="can"?' id="hCan"':""}><b>${ic}</b>${esc(t(k))}${n?` (${n})`:""}</button>`).join("")}</div>`;
+}
+/* ---- PHOTO: every photo field = 2 big buttons (camera OR phone gallery), same handler ----
+   photoHTML(id) -> HTML; bindPhoto(id, cb) -> cb(dataUrl) after resize/compress (VER 9: max 800px, JPEG 0.5 → ≤ ~100 KB). */
+function photoHTML(id){return `<div class="phPick" id="${id}"><label class="phCam"><input type="file" accept="image/*" capture="environment" data-ph="${id}">${esc(t("phTake"))}</label><label class="alt phGal"><input type="file" accept="image/*" data-ph="${id}">${esc(t("phPick"))}</label></div>`}
+function shrinkPhoto(file,max,q){return new Promise((ok,no)=>{const r=new FileReader();r.onerror=no;r.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{const k=Math.min(1,(max||1280)/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",q||0.7))};im.src=r.result};r.readAsDataURL(file)})}
+function bindPhoto(id,cb){document.querySelectorAll(`input[data-ph="${id}"]`).forEach(i=>i.onchange=()=>{const f=i.files&&i.files[0];if(!f)return;window.TMC.lastPhotoFrom=i.hasAttribute("capture")?"camera":"phone";phSmall(f).then(cb).catch(()=>{});i.value=""})}
+window.TMC.photoHTML=photoHTML;window.TMC.bindPhoto=bindPhoto;window.TMC.shrinkPhoto=shrinkPhoto;
+/* ---- VER 9 PHOTOS TO DRIVE (Johan 1 Nov 2026) ----
+   Photo is made small on the phone (max 800px, JPEG ~0.5, aim 50-100 KB, digits still readable), kept in THIS app's own
+   on-phone queue (IndexedDB "<APP_ID>_photos") until the upload worked, then sent to the app's own Drive folder (made by its
+   own Code.gs). The server adds a "pl" record (link only) that syncs to every phone; the Sheet shows the Drive link.
+   Offline = it waits and retries. Old photos: TMC.phBackfill([{id,d,at,ref}]) sends them in small batches (2 at a time),
+   skipping any older than 2 months. Admin: TMC.phBtn(id) = big "View photo" button. Server deletes photos older than 2 months daily.
+   TMC.phKeep(dataUrl,ref[,id[,at]]) -> photo id (put that id in your record). TMC.phState(id) -> drive|removed|phone|none. */
+Object.assign(T.en,{phView:"🖼️ View photo",phGone:"Photo removed (older than 2 months)",phWait:"Photo not sent yet (still on the phone)",phClose:"✖ Close",phLoad:"Loading photo…",phNo:"Photo not found."});
+Object.assign(T.fr,{phView:"🖼️ Voir la photo",phGone:"Photo supprimée (plus de 2 mois)",phWait:"Photo pas encore envoyée (encore sur le téléphone)",phClose:"✖ Fermer",phLoad:"Chargement de la photo…",phNo:"Photo introuvable."});
+Object.assign(T.af,{phView:"🖼️ Kyk foto",phGone:"Foto verwyder (ouer as 2 maande)",phWait:"Foto nog nie gestuur nie (nog op die foon)",phClose:"✖ Maak toe",phLoad:"Foto laai…",phNo:"Foto nie gevind nie."});
+Object.assign(T.ar,{phView:"🖼️ عرض الصورة",phGone:"تم حذف الصورة (أقدم من شهرين)",phWait:"الصورة لم تُرسل بعد (ما زالت على الهاتف)",phClose:"✖ إغلاق",phLoad:"جاري تحميل الصورة…",
+phNo:"الصورة غير موجودة."});
+const PH_DAYS=60,PH_MAX=800,PH_Q=0.5,PH_AIM=136000;   // 136000 base64 chars ≈ 100 KB
+let phDbP=null;
+function phDb(){return phDbP||(phDbP=new Promise((ok,no)=>{try{const r=indexedDB.open(P+"photos",1);r.onupgradeneeded=()=>r.result.createObjectStore("q",{keyPath:"id"});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}}))}
+function phTx(mode,f){return phDb().then(db=>new Promise((ok,no)=>{const tx=db.transaction("q",mode),s=tx.objectStore("q");let out;const r=f(s);if(r)r.onsuccess=()=>{out=r.result};tx.oncomplete=()=>ok(out);tx.onerror=()=>no(tx.error)}))}
+const phQ={all:()=>phTx("readonly",s=>s.getAll()).then(a=>a||[]),get:id=>phTx("readonly",s=>s.get(id)),put:o=>phTx("readwrite",s=>s.put(o)),del:id=>phTx("readwrite",s=>s.delete(id))};
+const phOld=at=>Date.now()-(Date.parse(at)||Date.now())>PH_DAYS*864e5;
+const phRec=id=>{const r=R["pl:"+id];return r&&!r.del?r.data:null};
+function phState(id){const d=phRec(id);return d?(d.removed?"removed":"drive"):(phLocal[id]?"phone":"none")}
+const phLocal={};   // ids waiting in this phone's queue (filled from IndexedDB at start)
+function phSmall(file){return shrinkPhoto(file,PH_MAX,PH_Q).then(d=>d.length<=PH_AIM?d:shrinkPhoto(file,PH_MAX,0.4)).then(d=>d.length<=PH_AIM?d:shrinkPhoto(file,PH_MAX,0.3))}
+function phKeep(d,ref,id,at){id=String(id||("ph"+Date.now()+Math.random().toString(36).slice(2,6)));phLocal[id]=1;
+  phQ.put({id:id,d:String(d),at:at||new Date().toISOString(),ref:String(ref||"").slice(0,80)}).then(()=>phSoon(300)).catch(e=>console.warn(e));return id}
+function phBackfill(list){return phQ.all().then(q=>{const have={};q.forEach(o=>have[o.id]=1);let n=0;
+  (list||[]).forEach(o=>{if(!o||!o.id||!o.d||have[o.id]||phRec(o.id)||phOld(o.at))return;phKeep(o.d,o.ref,o.id,o.at);n++});return n}).catch(()=>0)}
+let phBusy=false,phTmr=null,phFails=0;
+function phSoon(ms){clearTimeout(phTmr);phTmr=setTimeout(phPump,ms==null?2000:ms)}
+function phPump(){if(phBusy||!syncOn()||!navigator.onLine)return Promise.resolve(0);if(tokMode()&&!sTok())return Promise.resolve(0);phBusy=true;let sent=0;
+  return phQ.all().then(q=>{q.sort((a,b)=>String(a.at).localeCompare(String(b.at)));
+    const go=q.slice(0,2);   // small batches: 2 photos, then a pause
+    return go.reduce((p,o)=>p.then(()=>{if(phOld(o.at)||phRec(o.id)){delete phLocal[o.id];return phQ.del(o.id)}
+      return api({action:"photo",token:sTok()||undefined,code:sTok()?undefined:(sCode()||undefined),id:o.id,d:o.d,at:o.at,ref:o.ref}).then(j=>{
+        if(j&&j.ok){sent++;delete phLocal[o.id];return phQ.del(o.id)}                         // only now the phone copy goes
+        if(j&&/^(bad_photo|bad_id|too_big)$/.test(j.error||"")){delete phLocal[o.id];return phQ.del(o.id)}
+        throw new Error(j&&j.error||"photo")})}),Promise.resolve()).then(()=>q.length-go.length)})
+  .then(left=>{phBusy=false;phFails=0;if(sent)syncSoon(200);if(left>0)phSoon(15000);return sent})
+  .catch(e=>{phBusy=false;phFails++;phSoon(Math.min(300000,15000*Math.pow(2,phFails-1)));return sent})}
+phQ.all().then(q=>{q.forEach(o=>phLocal[o.id]=1);if(q.length)phSoon(5000)}).catch(()=>{});
+addEventListener("online",()=>phSoon(1500));
+function phBtn(id){const u=me();if(!id||!u||!u.admin)return "";const s=phState(id);
+  if(s==="removed")return `<p class="hint phGone">${esc(t("phGone"))}</p>`;
+  return `<button type="button" class="phView" data-phv="${esc(id)}">${esc(t("phView"))}</button>`}
+function phShow(src,msg){let o=document.getElementById("phOv");if(!o){o=document.createElement("div");o.id="phOv";o.className="phOv";document.body.appendChild(o)}
+  o.innerHTML=`${src?`<img alt="" src="${esc(src)}">`:`<p class="phMsg">${esc(msg||"")}</p>`}<button type="button" id="phOvX">${esc(t("phClose"))}</button>`;$("phOvX").onclick=()=>o.remove()}
+function phView(id){const u=me();if(!u||!u.admin)return Promise.resolve(false);
+  return phQ.get(id).catch(()=>null).then(o=>{if(o&&o.d){phShow(o.d);return true}const d=phRec(id);
+    if(d&&d.removed){phShow("",t("phGone"));return false}if(window.TMC.phLocalGet){const x=window.TMC.phLocalGet(id);if(x){phShow(x);return true}}
+    if(!d){phShow("",t("phWait"));return false}phShow("",t("phLoad"));
+    return api({action:"photoget",token:sTok()||undefined,id:id}).then(j=>{if(j&&j.ok&&j.d){phShow(j.d);return true}phShow("",t(j&&j.error==="photo_removed"?"phGone":"phNo"));return false},()=>{phShow("",t("ncT"));return false})})}
+document.addEventListener("click",e=>{const b=e.target&&e.target.closest&&e.target.closest("[data-phv]");if(b){e.preventDefault();phView(b.getAttribute("data-phv"))}});
+window.TMC.phKeep=phKeep;window.TMC.phBackfill=phBackfill;window.TMC.phPump=phPump;window.TMC.phState=phState;window.TMC.phBtn=phBtn;window.TMC.phView=phView;window.TMC.phSmall=phSmall;window.TMC.phQueue=()=>phQ.all();window.TMC.PH_DAYS=PH_DAYS;
+/* ---- REPORT: green company table (CONFIG REPORT_COLOR). rows=[[label,value],...] ---- */
+function reportHTML(title,rows){const tot=rows.reduce((a,r)=>a+(+r[1]||0),0);return `<div class="repH">📊 ${esc(title)}</div><table class="rep"><thead><tr><th>${esc(t("rpItem"))}</th><th>${esc(t("rpQty"))}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</tbody><tfoot><tr><td>${esc(t("rpTot"))}</td><td>${tot}</td></tr></tfoot></table>`}
+window.TMC.reportHTML=reportHTML;
+
+/* ==== STANDARD REPORTS SCREEN (every app) ====
+   TMC.addReport({id, title:{en,fr,ar}|"key", cols:[{key,label:{en,fr,ar}|"key",num:true,d:0,sum:true}], rows:(from,to)=>[{key:value}], totalLabel?})
+   - from/to = "YYYY-MM-DD" (inclusive). Rows are filtered by the app. Totals = sum of cols with sum:true.
+   - Seen only by Admin or users with the 📊 Reports tick. Green REPORT_COLOR table, Excel (SUM formulas), Print, Back. */
+const REPORTS=[];let rp={id:null,p:"today",from:"",to:""};
+function addReport(d){const i=REPORTS.findIndex(r=>r.id===d.id);if(i>=0)REPORTS[i]=d;else REPORTS.push(d);return d}
+const tx=v=>v==null?"":typeof v==="object"?(v[lang]||v.en||""):t(v);
+const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+function rpRange(){const n=new Date(),td=ymd(n);if(rp.p==="month")return [td.slice(0,8)+"01",ymd(new Date(n.getFullYear(),n.getMonth()+1,0))];if(rp.p==="pick"){let f=rp.from||td,to=rp.to||f;if(to<f){const x=f;f=to;to=x}return [f,to]}return [td,td]}
+function rpData(def){const [f,to]=rpRange(),rows=(def.rows(f,to)||[]),tot={};def.cols.forEach(c=>{if(c.sum)tot[c.key]=rows.reduce((a,r)=>a+(+r[c.key]||0),0)});return {f:f,to:to,rows:rows,tot:tot}}
+const fmtN=(v,d)=>v==null||v===""?"":(+v).toFixed(d||0);
+/* table in the company green (same look as TMC.reportHTML) */
+function repTable(def,D){const cs=def.cols;return `<div class="repH">📊 ${esc(tx(def.title))}</div><p class="hint" id="rpPer">${esc(t("rpPeriod"))}: ${esc(D.f===D.to?D.f:D.f+" → "+D.to)}</p><table class="rep"><thead><tr>${cs.map(c=>`<th${c.num?' class="nm"':""}>${esc(tx(c.label))}</th>`).join("")}</tr></thead><tbody>${D.rows.length?D.rows.map(r=>`<tr>${cs.map(c=>`<td${c.num?' class="nm"':""}>${esc(c.num?fmtN(r[c.key],c.d):r[c.key])}</td>`).join("")}</tr>`).join(""):`<tr><td colspan="${cs.length}">${esc(t("rpNone"))}</td></tr>`}</tbody><tfoot><tr>${cs.map((c,i)=>`<td${c.num?' class="nm"':""}>${i===0?esc(tx(def.totalLabel||"rpTot")):c.sum?esc(fmtN(D.tot[c.key],c.d)):""}</td>`).join("")}</tr></tfoot></table>`}
+const XL=(()=>{const CT=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;CT[n]=c>>>0}
+ const crc=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CT[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0};
+ const zip=fs=>{const E=new TextEncoder(),P=[],D=[];let off=0;const u16=(a,v)=>a.push(v&255,(v>>8)&255),u32=(a,v)=>a.push(v&255,(v>>8)&255,(v>>16)&255,(v>>>24)&255);
+  fs.forEach(([n,s])=>{const nb=E.encode(n),db=E.encode(s),c=crc(db),h=[];u32(h,0x04034b50);u16(h,20);u16(h,0x0800);u16(h,0);u16(h,0);u16(h,0x21);u32(h,c);u32(h,db.length);u32(h,db.length);u16(h,nb.length);u16(h,0);
+   const hb=new Uint8Array(h);P.push(hb,nb,db);const d=[];u32(d,0x02014b50);u16(d,20);u16(d,20);u16(d,0x0800);u16(d,0);u16(d,0);u16(d,0x21);u32(d,c);u32(d,db.length);u32(d,db.length);u16(d,nb.length);u16(d,0);u16(d,0);u16(d,0);u16(d,0);u32(d,0);u32(d,off);D.push(new Uint8Array(d),nb);off+=hb.length+nb.length+db.length});
+  const ds=D.reduce((a,b)=>a+b.length,0),e=[];u32(e,0x06054b50);u16(e,0);u16(e,0);u16(e,fs.length);u16(e,fs.length);u32(e,ds);u32(e,off);u16(e,0);return new Blob([...P,...D,new Uint8Array(e)],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})};
+ const x=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"");
+ const col=i=>{let s="";i++;while(i){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=(i-m-1)/26}return s};
+ /* cell = value | {v, s:"h"|"b"|"a"|"t"|"title"|"bold", d:decimals, f:formula}; rows=[[cell,...],...] */
+ function book(name,rows,widths,rc){rc=String(rc||"#1B7F3B").replace("#","").toUpperCase();const FILL={h:rc,a:"E8F3EC",t:"CDE3D4"},FMT={1:164,2:165,3:166};const X=[[0,0,0,0]],xi={};
+  const sid=(s,d,num)=>{const fill=s==="h"?2:s==="a"?3:s==="t"?4:0,font=s==="h"?1:s==="t"?2:s==="title"?3:s==="bold"?4:0,fmt=num&&d!=null?(d===0?1:FMT[d]||0):0,bd=(s==="h"||s==="a"||s==="t"||s==="b")?1:0,k=[fill,font,fmt,bd].join();if(xi[k]==null){xi[k]=X.length;X.push([fill,font,fmt,bd])}return xi[k]};
+  let sd="";rows.forEach((r,ri)=>{sd+=`<row r="${ri+1}"${(r||[]).some(c=>c&&c.s==="h"&&String(c.v).length>14)?' ht="46" customHeight="1"':""}>`;(r||[]).forEach((c,ci)=>{if(c==null||c==="")return;const o=typeof c==="object"?c:{v:c},ref=col(ci)+(ri+1),num=typeof o.v==="number"&&isFinite(o.v),st=sid(o.s,o.d,num||!!o.f);
+   if(o.f)sd+=`<c r="${ref}" s="${st}"><f>${x(o.f)}</f>${num?`<v>${o.v}</v>`:""}</c>`;else if(num)sd+=`<c r="${ref}" s="${st}"><v>${o.v}</v></c>`;else if(o.v==null||o.v===""){if(o.s)sd+=`<c r="${ref}" s="${st}"/>`}else sd+=`<c r="${ref}" s="${st}" t="inlineStr"><is><t xml:space="preserve">${x(o.v)}</t></is></c>`});sd+="</row>"});
+  const cols=widths&&widths.length?`<cols>${widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("")}</cols>`:"";
+  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>${cols}<sheetData>${sd}</sheetData><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+  const fills=`<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>${["h","a","t"].map(k=>`<fill><patternFill patternType="solid"><fgColor rgb="FF${FILL[k]}"/><bgColor indexed="64"/></patternFill></fill>`).join("")}</fills>`;
+  const fonts=`<fonts count="5"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF${rc}"/><name val="Calibri"/></font><font><b/><sz val="14"/><color rgb="FF${rc}"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="3"><numFmt numFmtId="164" formatCode="0.0"/><numFmt numFmtId="165" formatCode="0.00"/><numFmt numFmtId="166" formatCode="0.000"/></numFmts>${fonts}${fills}<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFB7D7C1"/></left><right style="thin"><color rgb="FFB7D7C1"/></right><top style="thin"><color rgb="FFB7D7C1"/></top><bottom style="thin"><color rgb="FFB7D7C1"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="${X.length}">${X.map(([fi,fo,nf,bd])=>`<xf numFmtId="${nf}" fontId="${fo}" fillId="${fi}" borderId="${bd}" xfId="0"${fi?' applyFill="1"':""}${fo?' applyFont="1"':""}${nf?' applyNumberFormat="1"':""}${bd?' applyBorder="1"':""}${fi===2?' applyAlignment="1"><alignment wrapText="1" vertical="center"/></xf>':"/>"}`).join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  const sn=x(String(name).replace(/[\\\/?*\[\]:]/g," ").slice(0,31)||"Sheet1");
+  return zip([["[Content_Types].xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`],
+   ["_rels/.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+   ["xl/workbook.xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${sn}" sheetId="1" r:id="rId1"/></sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`],
+   ["xl/_rels/workbook.xml.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+   ["xl/worksheets/sheet1.xml",sheet],["xl/styles.xml",styles]])}
+ return {book:book,col:col}})();
+function repXlsx(def,D){const cs=def.cols,R=[],a=5,b=4+Math.max(D.rows.length,1);
+ R.push([{v:tx(def.title),s:"title"}],[t("rpPeriod"),{v:D.f===D.to?D.f:D.f+" → "+D.to,s:"bold"}],[]);
+ R.push(cs.map(c=>({v:tx(c.label),s:"h"})));
+ if(!D.rows.length)R.push([{v:t("rpNone"),s:"b"}]);
+ D.rows.forEach((r,i)=>{const s=i%2?"a":"b";R.push(cs.map(c=>{const v=r[c.key];return c.num&&v!==""&&v!=null&&isFinite(+v)?{v:+v,d:c.d||0,s:s}:{v:v==null?"":String(v),s:s}}))});
+ R.push(cs.map((c,i)=>i===0?{v:tx(def.totalLabel||"rpTot"),s:"t"}:c.sum?{v:+fmtN(D.tot[c.key],c.d),d:c.d||0,s:"t",f:`SUM(${XL.col(i)}${a}:${XL.col(i)}${b})`}:{v:"",s:"t"}));
+ const nm=(C.SHORT+" "+tx(def.title)+" "+(D.f===D.to?D.f:D.f+" to "+D.to)).replace(/[\\\/:*?"<>|]/g," ");
+ return {name:nm+".xlsx",blob:XL.book(tx(def.title),R,cs.map(c=>c.num?14:24),C.REPORT_COLOR)}}
+function sendXls(o){const f=typeof File==="function"?new File([o.blob],o.name,{type:o.blob.type}):null;
+ if(f&&navigator.canShare&&navigator.share&&navigator.canShare({files:[f]}))return navigator.share({files:[f],title:o.name}).catch(e=>{if(!e||e.name!=="AbortError")dlXls(o)});return Promise.resolve(dlXls(o))}
+function dlXls(o){const u=URL.createObjectURL(o.blob),a=document.createElement("a");a.href=u;a.download=o.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}
+function repScreenHTML(u){
+ if(!repOk(u))return `<div class="box"><p>${esc(t("noAccess"))}</p></div>`;
+ const def=REPORTS.length===1?REPORTS[0]:REPORTS.find(r=>r.id===rp.id);
+ if(!def)return `<div class="box rpList" id="rpList"><h2>📊 ${esc(t("reports"))}</h2><p class="hint">${esc(t("rpPick"))}</p>${REPORTS.map(r=>`<button type="button" class="sec" data-rp="${esc(r.id)}">📊 ${esc(tx(r.title))}</button>`).join("")}</div>`;
+ const D=rpData(def),[f,to]=[D.f,D.to];
+ return `<div class="box noPr" id="rpPick"><div class="rpBar">${[["today","rpToday"],["month","rpMonth"],["pick","rpDates"]].map(([k,l])=>`<button type="button" class="sec${rp.p===k?" on":""}" data-rpp="${k}">${esc(t(l))}</button>`).join("")}</div>
+ ${rp.p==="pick"?`<div class="rpDates"><div><label for="rpF">${esc(t("rpFrom"))}</label><input type="date" id="rpF" value="${esc(f)}"></div><div><label for="rpT">${esc(t("rpTo"))}</label><input type="date" id="rpT" value="${esc(to)}"></div></div><button type="button" id="rpGo">${esc(t("rpShow"))}</button>`:""}</div>
+ <div class="box" id="rpOut">${repTable(def,D)}</div>
+ <div class="rpAct noPr">${canXlsU(u)?`<button type="button" class="rpXls" id="rpXls">${esc(t("rpXls"))}</button>`:""}<button type="button" class="sec" id="rpPrint">${esc(t("rpPrint"))}</button><button type="button" class="sec rpBk" id="rpBack">${esc(t("rpBack"))}</button></div>`}
+function canXlsU(u){return repOk(u)}
+function bindRep(u){const on=(id,fn)=>{const e=$(id);if(e)e.onclick=fn};
+ document.querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>{rp.id=b.dataset.rp;render()});
+ document.querySelectorAll("[data-rpp]").forEach(b=>b.onclick=()=>{rp.p=b.dataset.rpp;if(rp.p==="pick"&&!rp.from){const r=rpRange();rp.from=r[0];rp.to=r[1]}render()});
+ on("rpGo",()=>{rp.from=$("rpF").value;rp.to=$("rpT").value;render()});
+ const cur=()=>REPORTS.length===1?REPORTS[0]:REPORTS.find(r=>r.id===rp.id);
+ on("rpXls",()=>{const d=cur();if(d)sendXls(repXlsx(d,rpData(d)))});
+ on("rpPrint",()=>window.print());
+ on("rpBack",()=>{if(REPORTS.length>1&&rp.id){rp.id=null}else tab="home";render()})}
+Object.assign(window.TMC,{addReport:addReport,REPORTS:REPORTS,XL:XL,repXlsx:repXlsx,rpData:rpData,sendXls:sendXls,repOk:repOk,rp:()=>rp});
+/* ==================== APP FEATURES START ====================
+   TMC Assets sample. Kinds: a approved item, r pending add/edit/move,
+   m applied move, c camp, p photo, x kept for the base suite.
+   Staff changes are stored as r and do not change the item until Admin
+   Approve. Admin Save applies at once. Successful Save calls TMC.afterSave(true).
+   Times use 24-hour Africa/Ndjamena. SYNC_URL stays empty (Not connected yet). */
+Object.assign(T.en,{work:"Items",asTitle:"Items",asNew:"Add item",asNone:"No items yet. Tap Add item.",asNoneF:"No items match.",asSample:"Sample only. Not a live list.",asAll:"All",asSearch:"Search name or serial",asCamp:"Where it is",asType:"Type",asName:"Name",asNameH:"Name of the item",asSerial:"Serial or number plate",asSerialH:"Serial or number plate",asHolder:"Who has it",asHolderH:"Name of the person",asCond:"Condition",asGood:"Good",asRepair:"Needs repair",asBroken:"Broken",asNeedName:"Type the name.",asNeedCamp:"Pick a camp.",asNeedType:"Pick a type.",asSave:"Save item",asChange:"Change item",asMove:"Move item",asMoveTo:"Move to",asMoveNote:"Note",asMoveNoteH:"Why it moved (optional)",asNeedTo:"Pick the camp it is going to.",asNeedDiff:"Pick a different camp.",asSaveMove:"Save move",asWait:"Waiting for Admin",asWaitH:"Saved. Waiting for Admin. The item is not changed yet.",asHasPend:"Already waiting for Admin.",asAppr:"Approvals",asApprH:"Staff changes wait here. Approve or Reject. Until then the item stays as it is.",asNoneAp:"Nothing waiting.",asApprove:"✅ Approve",asReject:"❌ Reject",asCamps:"Camps",asCampsH:"Admin only. Staff pick from this list.",asCampName:"Camp name",asCampNameH:"Camp or site name",asNeedCampN:"Type the camp name.",asSaveCamp:"Save camp",asNewCamp:"Add camp",asNoneCamp:"No camps yet.",asEx:"EXAMPLE",asHq:"HQ",asExN:"Example camp North",asExS:"Example camp South",asHist:"Move history",asNoHist:"No moves yet.",asFrom:"From",asTo:"To",asWhen:"When",asBy:"By",asPhoto:"Photo",asPhotoH:"Take a photo or choose one from the phone.",asDetail:"Item",asPendAdd:"New item (not on the list yet)",asNo:"—",asTyVehicle:"Vehicle",asTyTent:"Tent",asTyStarlink:"Starlink",asTyTable:"Table",asTyBed:"Bed",asTyContainer:"Container",asTyOther:"Other",asTyCrane:"Crane",asTyTelehandler:"Telehandler",asTySkidsteer:"Skid steer",asTyTlb:"TLB",asTyExcavator:"Excavator",asTyPecker:"Pecker",asTyFlowbin:"Flowbin",asTyGenerator:"Generator",asTyBowser:"Bowser",asNeedSerial:"Type the serial or number plate. This is the fixed ID and cannot change later.",asIdFixed:"This ID never changes.",asIdUsed:"That ID is already on the list."});
+Object.assign(T.fr,{work:"Articles",asTitle:"Articles",asNew:"Ajouter un article",asNone:"Pas encore d'article. Touchez Ajouter un article.",asNoneF:"Aucun article ne correspond.",asSample:"Exemple seulement. Pas une liste réelle.",asAll:"Tous",asSearch:"Chercher nom ou série",asCamp:"Où il est",asType:"Type",asName:"Nom",asNameH:"Nom de l'article",asSerial:"Série ou plaque",asSerialH:"Série ou plaque",asHolder:"Qui l'a",asHolderH:"Nom de la personne",asCond:"État",asGood:"Bon",asRepair:"À réparer",asBroken:"Cassé",asNeedName:"Écrivez le nom.",asNeedCamp:"Choisissez un camp.",asNeedType:"Choisissez un type.",asSave:"Enregistrer l'article",asChange:"Modifier l'article",asMove:"Déplacer l'article",asMoveTo:"Déplacer vers",asMoveNote:"Note",asMoveNoteH:"Pourquoi il a bougé (facultatif)",asNeedTo:"Choisissez le camp de destination.",asNeedDiff:"Choisissez un autre camp.",asSaveMove:"Enregistrer le déplacement",asWait:"En attente de l'Admin",asWaitH:"Enregistré. En attente de l'Admin. L'article n'est pas encore changé.",asHasPend:"Déjà en attente de l'Admin.",asAppr:"Approbations",asApprH:"Les changements du personnel attendent ici. Approuver ou Refuser. Jusque-là l'article reste comme il est.",asNoneAp:"Rien en attente.",asApprove:"✅ Approuver",asReject:"❌ Refuser",asCamps:"Camps",asCampsH:"Admin seulement. Le personnel choisit dans cette liste.",asCampName:"Nom du camp",asCampNameH:"Nom du camp ou du site",asNeedCampN:"Écrivez le nom du camp.",asSaveCamp:"Enregistrer le camp",asNewCamp:"Ajouter un camp",asNoneCamp:"Pas encore de camp.",asEx:"EXEMPLE",asHq:"HQ",asExN:"Camp exemple Nord",asExS:"Camp exemple Sud",asHist:"Historique des déplacements",asNoHist:"Pas encore de déplacement.",asFrom:"De",asTo:"Vers",asWhen:"Quand",asBy:"Par",asPhoto:"Photo",asPhotoH:"Prenez une photo ou choisissez-en une sur le téléphone.",asDetail:"Article",asPendAdd:"Nouvel article (pas encore sur la liste)",asNo:"—",asTyVehicle:"Véhicule",asTyTent:"Tente",asTyStarlink:"Starlink",asTyTable:"Table",asTyBed:"Lit",asTyContainer:"Conteneur",asTyOther:"Autre",asTyCrane:"Grue",asTyTelehandler:"Chariot télescopique",asTySkidsteer:"Mini-chargeuse",asTyTlb:"Tractopelle",asTyExcavator:"Pelle",asTyPecker:"Brise-roche",asTyFlowbin:"Flowbin",asTyGenerator:"Groupe électrogène",asTyBowser:"Bowser",asNeedSerial:"Écrivez le n° de série ou la plaque. C'est l'identifiant fixe, il ne changera plus.",asIdFixed:"Cet identifiant ne change jamais.",asIdUsed:"Cet identifiant est déjà sur la liste."});
+Object.assign(T.af,{work:"Items",asTitle:"Items",asNew:"Voeg item by",asNone:"Nog geen items nie. Tik Voeg item by.",asNoneF:"Geen items pas nie.",asSample:"Net 'n voorbeeld. Nie 'n regte lys nie.",asAll:"Alles",asSearch:"Soek naam of reeksnommer",asCamp:"Waar dit is",asType:"Tipe",asName:"Naam",asNameH:"Naam van die item",asSerial:"Reeksnommer of nommerplaat",asSerialH:"Reeksnommer of nommerplaat",asHolder:"Wie dit het",asHolderH:"Naam van die persoon",asCond:"Toestand",asGood:"Goed",asRepair:"Moet herstel word",asBroken:"Stuk",asNeedName:"Tik die naam.",asNeedCamp:"Kies 'n kamp.",asNeedType:"Kies 'n tipe.",asSave:"Stoor item",asChange:"Verander item",asMove:"Skuif item",asMoveTo:"Skuif na",asMoveNote:"Nota",asMoveNoteH:"Hoekom dit geskuif het (opsioneel)",asNeedTo:"Kies die kamp waarheen dit gaan.",asNeedDiff:"Kies 'n ander kamp.",asSaveMove:"Stoor skuif",asWait:"Wag vir Admin",asWaitH:"Gestoor. Wag vir Admin. Die item is nog nie verander nie.",asHasPend:"Wag al vir Admin.",asAppr:"Goedkeurings",asApprH:"Personeel se veranderinge wag hier. Keur goed of Keer af. Tot dan bly die item soos dit is.",asNoneAp:"Niks wat wag nie.",asApprove:"✅ Keur goed",asReject:"❌ Keer af",asCamps:"Kampe",asCampsH:"Net Admin. Personeel kies uit hierdie lys.",asCampName:"Kampnaam",asCampNameH:"Kamp- of terreinnaam",asNeedCampN:"Tik die kampnaam.",asSaveCamp:"Stoor kamp",asNewCamp:"Voeg kamp by",asNoneCamp:"Nog geen kampe nie.",asEx:"VOORBEELD",asHq:"HQ",asExN:"Voorbeeldkamp Noord",asExS:"Voorbeeldkamp Suid",asHist:"Skuifgeskiedenis",asNoHist:"Nog geen skuwe nie.",asFrom:"Van",asTo:"Na",asWhen:"Wanneer",asBy:"Deur",asPhoto:"Foto",asPhotoH:"Neem 'n foto of kies een op die foon.",asDetail:"Item",asPendAdd:"Nuwe item (nog nie op die lys nie)",asNo:"—",asTyVehicle:"Voertuig",asTyTent:"Tent",asTyStarlink:"Starlink",asTyTable:"Tafel",asTyBed:"Bed",asTyContainer:"Houer",asTyOther:"Ander",asTyCrane:"Kraan",asTyTelehandler:"Teleskoopmasjien",asTySkidsteer:"Glystuur",asTyTlb:"TLB",asTyExcavator:"Graafmasjien",asTyPecker:"Pecker",asTyFlowbin:"Flowbin",asTyGenerator:"Kragopwekker",asTyBowser:"Bowser",asNeedSerial:"Tik die reeksnommer of nommerplaat. Dit is die vaste ID en kan later nie verander nie.",asIdFixed:"Hierdie ID verander nooit.",asIdUsed:"Daardie ID is al op die lys."});
+Object.assign(T.ar,{work:"العناصر",asTitle:"العناصر",asNew:"إضافة عنصر",asNone:"لا توجد عناصر بعد. اضغط إضافة عنصر.",asNoneF:"لا يوجد عنصر مطابق.",
+asSample:"نموذج فقط. ليست قائمة حقيقية.",asAll:"الكل",asSearch:"ابحث بالاسم أو الرقم",asCamp:"مكانه",asType:"النوع",asName:"الاسم",asNameH:"اسم العنصر",
+asSerial:"الرقم التسلسلي أو رقم اللوحة",asSerialH:"الرقم التسلسلي أو رقم اللوحة",asHolder:"من معه",asHolderH:"اسم الشخص",asCond:"الحالة",asGood:"جيد",
+asRepair:"يحتاج إلى إصلاح",asBroken:"معطوب",asNeedName:"اكتب الاسم.",asNeedCamp:"اختر المخيم.",asNeedType:"اختر النوع.",asSave:"حفظ العنصر",
+asChange:"تعديل العنصر",asMove:"نقل العنصر",asMoveTo:"نقل إلى",asMoveNote:"ملاحظة",asMoveNoteH:"سبب النقل (اختياري)",asNeedTo:"اختر المخيم الذي سيذهب إليه.",
+asNeedDiff:"اختر مخيمًا آخر.",asSaveMove:"حفظ النقل",asWait:"بانتظار المسؤول",asWaitH:"تم الحفظ. بانتظار المسؤول. العنصر لم يُغيَّر بعد.",
+asHasPend:"بانتظار المسؤول بالفعل.",asAppr:"الموافقات",asApprH:"تغييرات الموظفين تنتظر هنا. وافق أو ارفض. حتى ذلك يبقى العنصر كما هو.",
+asNoneAp:"لا شيء بالانتظار.",asApprove:"✅ موافقة",asReject:"❌ رفض",asCamps:"المخيمات",asCampsH:"للمسؤول فقط. يختار الموظفون من هذه القائمة.",
+asCampName:"اسم المخيم",asCampNameH:"اسم المخيم أو الموقع",asNeedCampN:"اكتب اسم المخيم.",asSaveCamp:"حفظ المخيم",asNewCamp:"إضافة مخيم",
+asNoneCamp:"لا توجد مخيمات بعد.",asEx:"مثال",asHq:"HQ",asExN:"مخيم مثال شمال",asExS:"مخيم مثال جنوب",asHist:"سجل النقل",asNoHist:"لا توجد عمليات نقل بعد.",
+asFrom:"من",asTo:"إلى",asWhen:"متى",asBy:"بواسطة",asPhoto:"صورة",asPhotoH:"التقط صورة أو اختر واحدة من الهاتف.",asDetail:"العنصر",
+asPendAdd:"عنصر جديد (ليس على القائمة بعد)",asNo:"—",asTyVehicle:"مركبة",asTyTent:"خيمة",asTyStarlink:"ستارلينك",asTyTable:"طاولة",asTyBed:"سرير",
+asTyContainer:"حاوية",asTyOther:"أخرى",asTyCrane:"رافعة",asTyTelehandler:"رافعة تلسكوبية",asTySkidsteer:"لودر صغير",asTyTlb:"TLB",asTyExcavator:"حفارة",
+asTyPecker:"كسارة",asTyFlowbin:"فلووبن",asTyGenerator:"مولد",asTyBowser:"صهريج",
+asNeedSerial:"اكتب الرقم التسلسلي أو رقم اللوحة. هذا هو المعرّف الثابت ولا يمكن تغييره لاحقًا.",asIdFixed:"هذا المعرّف لا يتغير أبدًا.",
+asIdUsed:"هذا المعرّف موجود على القائمة بالفعل."});
+const AS={screen:"list",fltType:"all",fltCamp:"all",q:"",id:null,edit:0,pendingPhoto:null,thumbs:{},err:""};
+const AS_TZ="Africa/Ndjamena";
+const AS_TYPES=["vehicle","excavator","pecker","crane","telehandler","skidsteer","tlb","flowbin","generator","bowser","tent","starlink","table","bed","container","other"];
+const AS_MV=["vehicle","excavator","pecker","crane","telehandler","skidsteer","tlb","flowbin","generator","bowser"];
+const AS_IC={vehicle:"🚗",excavator:"🚜",pecker:"🔨",crane:"🏗️",telehandler:"🚜",skidsteer:"🚜",tlb:"🚜",flowbin:"🛢️",generator:"⚡",bowser:"🛢️",tent:"⛺",starlink:"📡",table:"🪵",bed:"🛏️",container:"📦",other:"📦"};
+/* VER 7: the SAME pictures as TMC Fuel v38 (copied from Fuel's VICON, read only). One picture per machine type;
+   'vehicle' items use Fuel's car / tipper / drop side / tanker picture. Tents, Starlinks, tables, beds, containers, Other keep their icon in the same frame. */
+const AS_VICON={car:'<path d="M14 52 L22 34 Q26 28 34 28 H78 Q86 28 92 34 L102 44 H108 Q112 44 112 50 V58 H8 V54 Z" fill="#16a34a"/><path d="M30 34 H52 V44 H24 Z M58 34 H78 L88 44 H58 Z" fill="#bae6fd"/><rect x="26" y="22" width="56" height="5" rx="2" fill="#374151"/><circle cx="32" cy="58" r="10" fill="#1f2937"/><circle cx="32" cy="58" r="4.0" fill="#d1d5db"/><circle cx="88" cy="58" r="10" fill="#1f2937"/><circle cx="88" cy="58" r="4.0" fill="#d1d5db"/>',tipper:'<path d="M6 22 L66 14 L70 50 H10 Z" fill="#ea580c"/><path d="M74 26 H96 L110 40 V52 H74 Z" fill="#dc2626"/><path d="M80 30 H94 L104 40 H80 Z" fill="#bae6fd"/><rect x="8" y="50" width="104" height="6" fill="#374151"/><circle cx="22" cy="60" r="9" fill="#1f2937"/><circle cx="22" cy="60" r="3.6" fill="#d1d5db"/><circle cx="46" cy="60" r="9" fill="#1f2937"/><circle cx="46" cy="60" r="3.6" fill="#d1d5db"/><circle cx="96" cy="60" r="9" fill="#1f2937"/><circle cx="96" cy="60" r="3.6" fill="#d1d5db"/>',dropside:'<rect x="6" y="30" width="64" height="20" fill="#2563eb"/><path d="M6 30 V24 H70 V30" fill="none" stroke="#1e3a8a" stroke-width="4"/><line x1="28" y1="30" x2="28" y2="50" stroke="#1e3a8a" stroke-width="3"/><line x1="50" y1="30" x2="50" y2="50" stroke="#1e3a8a" stroke-width="3"/><path d="M74 24 H96 L110 38 V52 H74 Z" fill="#0ea5e9"/><path d="M80 28 H94 L104 38 H80 Z" fill="#e0f2fe"/><rect x="6" y="50" width="106" height="6" fill="#374151"/><circle cx="22" cy="60" r="9" fill="#1f2937"/><circle cx="22" cy="60" r="3.6" fill="#d1d5db"/><circle cx="46" cy="60" r="9" fill="#1f2937"/><circle cx="46" cy="60" r="3.6" fill="#d1d5db"/><circle cx="96" cy="60" r="9" fill="#1f2937"/><circle cx="96" cy="60" r="3.6" fill="#d1d5db"/>',tanker:'<rect x="6" y="22" width="66" height="30" rx="15" fill="#e5e7eb" stroke="#6b7280" stroke-width="3"/><rect x="10" y="34" width="58" height="6" fill="#dc2626"/><path d="M76 24 H96 L110 38 V52 H76 Z" fill="#dc2626"/><path d="M82 28 H94 L104 38 H82 Z" fill="#bae6fd"/><rect x="6" y="52" width="106" height="5" fill="#374151"/><circle cx="22" cy="61" r="9" fill="#1f2937"/><circle cx="22" cy="61" r="3.6" fill="#d1d5db"/><circle cx="46" cy="61" r="9" fill="#1f2937"/><circle cx="46" cy="61" r="3.6" fill="#d1d5db"/><circle cx="96" cy="61" r="9" fill="#1f2937"/><circle cx="96" cy="61" r="3.6" fill="#d1d5db"/>',crane:'<rect x="10" y="44" width="100" height="12" rx="3" fill="#facc15"/><rect x="76" y="30" width="22" height="16" fill="#eab308"/><path d="M80 33 H94 V42 H80 Z" fill="#bae6fd"/><path d="M40 44 L98 6 L102 12 L48 46 Z" fill="#f59e0b" stroke="#92400e" stroke-width="2"/><line x1="100" y1="10" x2="100" y2="30" stroke="#111" stroke-width="2"/><rect x="96" y="28" width="8" height="5" fill="#111"/><circle cx="22" cy="60" r="9" fill="#1f2937"/><circle cx="22" cy="60" r="3.6" fill="#d1d5db"/><circle cx="44" cy="60" r="9" fill="#1f2937"/><circle cx="44" cy="60" r="3.6" fill="#d1d5db"/><circle cx="78" cy="60" r="9" fill="#1f2937"/><circle cx="78" cy="60" r="3.6" fill="#d1d5db"/><circle cx="100" cy="60" r="9" fill="#1f2937"/><circle cx="100" cy="60" r="3.6" fill="#d1d5db"/>',telehandler:'<rect x="20" y="40" width="76" height="14" rx="4" fill="#f97316"/><rect x="56" y="22" width="22" height="20" rx="3" fill="#ea580c"/><path d="M60 26 H74 V38 H60 Z" fill="#bae6fd"/><path d="M28 42 L96 16 L100 24 L36 48 Z" fill="#374151"/><path d="M98 18 V30 H112" fill="none" stroke="#111" stroke-width="4"/><circle cx="32" cy="60" r="11" fill="#1f2937"/><circle cx="32" cy="60" r="4.4" fill="#d1d5db"/><circle cx="84" cy="60" r="11" fill="#1f2937"/><circle cx="84" cy="60" r="4.4" fill="#d1d5db"/>',skidsteer:'<rect x="26" y="20" width="44" height="38" rx="6" fill="#facc15"/><rect x="32" y="26" width="26" height="18" fill="#bae6fd"/><path d="M70 30 L96 36 L96 44 L70 42 Z" fill="#374151"/><path d="M94 30 H112 L106 56 H94 Z" fill="#4b5563"/><rect x="18" y="54" width="62" height="14" rx="7" fill="#1f2937"/><circle cx="32" cy="61" r="6" fill="#1f2937"/><circle cx="32" cy="61" r="2.4" fill="#d1d5db"/><circle cx="66" cy="61" r="6" fill="#1f2937"/><circle cx="66" cy="61" r="2.4" fill="#d1d5db"/>',tlb:'<rect x="28" y="34" width="56" height="18" rx="3" fill="#facc15"/><rect x="40" y="16" width="26" height="20" fill="#eab308"/><path d="M44 20 H62 V34 H44 Z" fill="#bae6fd"/><path d="M84 38 L104 40 L106 56 L96 58" fill="none" stroke="#374151" stroke-width="5"/><path d="M28 38 L10 22 L4 34" fill="none" stroke="#374151" stroke-width="5"/><path d="M2 30 L12 36 L6 44 Z" fill="#374151"/><circle cx="40" cy="60" r="11" fill="#1f2937"/><circle cx="40" cy="60" r="4.4" fill="#d1d5db"/><circle cx="78" cy="62" r="7" fill="#1f2937"/><circle cx="78" cy="62" r="2.8" fill="#d1d5db"/>',excavator:'<rect x="14" y="56" width="62" height="12" rx="6" fill="#1f2937"/><rect x="18" y="38" width="54" height="16" rx="3" fill="#f59e0b"/><rect x="48" y="22" width="20" height="18" fill="#d97706"/><path d="M52 26 H64 V36 H52 Z" fill="#bae6fd"/><path d="M66 40 L92 12 L110 30" fill="none" stroke="#f59e0b" stroke-width="7" stroke-linejoin="round"/><path d="M104 28 L116 34 L110 50 L98 44 Z" fill="#374151"/>',pecker:'<rect x="14" y="56" width="62" height="12" rx="6" fill="#1f2937"/><rect x="18" y="38" width="54" height="16" rx="3" fill="#f59e0b"/><rect x="48" y="22" width="20" height="18" fill="#d97706"/><path d="M52 26 H64 V36 H52 Z" fill="#bae6fd"/><path d="M66 40 L92 12 L108 26" fill="none" stroke="#f59e0b" stroke-width="7" stroke-linejoin="round"/><rect x="102" y="26" width="10" height="22" fill="#dc2626"/><path d="M104 48 H110 L107 60 Z" fill="#374151"/><path d="M114 56 l6 -3 M114 62 l6 1" stroke="#111" stroke-width="2"/>',bowser:'<rect x="30" y="18" width="80" height="32" rx="16" fill="#e5e7eb" stroke="#6b7280" stroke-width="3"/><rect x="34" y="31" width="72" height="6" fill="#dc2626"/><rect x="64" y="12" width="12" height="7" rx="2" fill="#6b7280"/><rect x="36" y="40" width="16" height="12" rx="2" fill="#374151"/><circle cx="44" cy="46" r="3.5" fill="#facc15"/><rect x="28" y="50" width="86" height="5" fill="#374151"/><path d="M30 52 L6 56" stroke="#374151" stroke-width="4" stroke-linecap="round"/><circle cx="6" cy="56" r="3" fill="#111"/><rect x="10" y="56" width="3" height="10" fill="#6b7280"/><circle cx="74" cy="61" r="9" fill="#1f2937"/><circle cx="74" cy="61" r="3.6" fill="#d1d5db"/><circle cx="96" cy="61" r="9" fill="#1f2937"/><circle cx="96" cy="61" r="3.6" fill="#d1d5db"/>',flowbin:'<rect x="12" y="18" width="96" height="42" rx="6" fill="#0891b2"/><rect x="18" y="24" width="84" height="8" fill="#67e8f9"/><rect x="16" y="60" width="10" height="8" fill="#374151"/><rect x="94" y="60" width="10" height="8" fill="#374151"/><circle cx="96" cy="44" r="7" fill="#fbbf24"/><text x="46" y="52" font-size="18" font-weight="900" fill="#fff" font-family="sans-serif">⛽</text>',generator:'<rect x="10" y="18" width="100" height="44" rx="6" fill="#16a34a"/><rect x="16" y="24" width="50" height="32" fill="#15803d"/><path d="M22 28 H60 M22 34 H60 M22 40 H60 M22 46 H60 M22 52 H60" stroke="#86efac" stroke-width="2"/><path d="M88 26 L78 42 H86 L80 56 L96 36 H88 L94 26 Z" fill="#facc15" stroke="#854d0e" stroke-width="1.5"/><rect x="14" y="62" width="12" height="6" fill="#374151"/><rect x="94" y="62" width="12" height="6" fill="#374151"/>'};
+const AS_VPIC=["car","tipper","dropside","tanker"];
+const AS_PICS=["car","tipper","dropside","tanker","crane","telehandler","skidsteer","tlb","excavator","pecker","flowbin","generator","bowser","tent","starlink","table","bed","container","other"];
+/* Fuel's picture for each Fuel seed machine (Fuel id s_<serial>), from Fuel's own type rules */
+const AS_FUEL_PIC={B052052:"car","0450":"crane",ZTH4018:"telehandler",D327778:"tipper",C310111:"skidsteer",Z403013:"tlb","1E33608":"dropside","1I22938":"tanker",KA00514:"excavator",KA00507:"excavator","Terex 1":"flowbin","Terex 2":"flowbin","938324H":"generator","094847K":"generator","094772K":"generator","094768K":"generator",KA04687:"pecker","6.5KW":"generator","LND10000T-G":"generator","LND10000T-T":"generator"};
+function asFuelGuess(v){const m=((v&&v.model)||"")+" "+((v&&v.note)||"");const t=[[/pecker|breaker|marteau/i,"pecker"],[/excavat|pelle/i,"excavator"],[/tipper|benne|howo/i,"tipper"],[/drop ?side|plateau/i,"dropside"],[/tanker|citerne|kouri/i,"tanker"],[/telli|tele/i,"telehandler"],[/crane|grue/i,"crane"],[/skid/i,"skidsteer"],[/tlb|backhoe|retro/i,"tlb"],[/generat|groupe|perkins|kw\b/i,"generator"],[/bowser/i,"bowser"],[/flowbin|terex/i,"flowbin"],[/cruiser|toyota|car|4x4|hilux|pick/i,"car"]];for(const a of t)if(a[0].test(m))return a[1];return ""}
+function asPicCat(k){return AS_VPIC.indexOf(k)>=0?"vehicle":k}
+function asPicKey(a){a=a||{};const ty=a.type||"other",ok=k=>k&&asPicCat(k)===ty&&AS_PICS.indexOf(k)>=0;
+  if(ok(a.pic))return a.pic;const f=AS_FUEL_PIC[a.serial];if(ok(f))return f;
+  if(ty==="vehicle"){const g=asFuelGuess({model:a.name||""});return AS_VPIC.indexOf(g)>=0?g:"car"}
+  return ty}
+function asPicHTML(k,ty){return AS_VICON[k]?`<svg class="vic" viewBox="0 0 120 74" role="img" aria-label="${esc(k)}">${AS_VICON[k]}</svg>`:`<span class="ni">${AS_IC[ty||k]||"📦"}</span>`}
+function asThumb(a,cls){return `<span class="${cls}">${asPicHTML(asPicKey(a),a&&a.type)}</span>`}
+function asFixedId(serial){return "m_"+String(serial||"").replace(/[^A-Za-z0-9]/g,"")}
+function asFuelId(serial){return "s_"+String(serial||"").replace(/[^A-Za-z0-9]/g,"")}  /* Fuel v38 SEED id, e.g. s_KA00507 */
+function asNormCamp(name){const n=String(name||"").trim().replace(/\s+/g," ");if(/^1\s*Alfa(\s+Camp)?$/i.test(n)||/^10\s*Alfa(\s+Camp)?$/i.test(n))return "10 Alfa";return n}
+/* Master machine/vehicle list from Fuel v38 SEED_V in /workspace/fuel-b38/index.html
+   (started from "1026 Diesel Use GZ.xlsx", Vehicles + KM HS + Generator, Oct 2026).
+   Kouri is a fuel supplier, not a machine — left out. Johan (10 Nov 2026): KA00507 = Bucket 2, KA04687 = Bucket 3.
+   serial is the fixed ID (never changes); the name may be edited later. */
+const AS_MASTER=[
+ ["Toyota Cruiser","B052052","vehicle","c_production"],
+ ["Zoomlion Crane","0450","crane","c_gz"],
+ ["Zoomlion Telehandler","ZTH4018","telehandler","c_gz"],
+ ["Howo Tipper","D327778","vehicle","c_gz"],
+ ["XCMG Skid Steer","C310111","skidsteer","c_gz"],
+ ["Cat TLB","Z403013","tlb","c_gz"],
+ ["FAW Drop side","1E33608","vehicle","c_gz"],
+ ["FAW Tanker","1I22938","vehicle","c_gz"],
+ ["Excavator Bucket 1","KA00514","excavator","c_gz"],
+ ["Bucket 2","KA00507","excavator","c_gz"],
+ ["Flowbin 1","Terex 1","flowbin","c_terex"],
+ ["Flowbin 2","Terex 2","flowbin","c_terex"],
+ ["Generator PERKINS P22 GV8340 22KW","938324H","generator","c_workshop"],
+ ["Generator PERKINS Pi 150P MC PP82576 150KW","094847K","generator","c_crusher"],
+ ["Generator PERKINS Pi 150P 1 PP82576 150KW","094772K","generator","c_spare"],
+ ["Generator PERKINS Pi 150P 2 PP83576 150KW","094768K","generator","c_spare"],
+ ["Bucket 3","KA04687","pecker","c_gz"],
+ ["Generator Honda 6.5KW","6.5KW","generator",""],
+ ["Generator CNR PHASA 10KW Workshop","LND10000T-G","generator","c_workshop"],
+ ["Generator CNR PHASA 10KW Terex","LND10000T-T","generator","c_terex"]
+];
+function asTy(k){return t("asTy"+String(k||"other").charAt(0).toUpperCase()+String(k||"other").slice(1))||k}
+function asCond(k){return k==="repair"?t("asRepair"):k==="broken"?t("asBroken"):t("asGood")}
+function asWhen(at){
+  const d=new Date(at);if(!at||isNaN(d.getTime()))return "";
+  const loc=dLoc();
+  const opts={timeZone:AS_TZ,hour:"2-digit",minute:"2-digit",hour12:false};
+  const tm=d.toLocaleTimeString(loc,opts);
+  const day=d.toLocaleDateString(loc,{timeZone:AS_TZ,day:"numeric",month:"short",year:"numeric"});
+  const today=new Date().toLocaleDateString(loc,{timeZone:AS_TZ,day:"numeric",month:"short",year:"numeric"});
+  return (day===today?"":day+" ")+tm;
+}
+function asErr(msg){AS.err=msg||"";const e=$("asErr");if(!e)return;e.textContent=AS.err;e.style.display=AS.err?"block":"none"}
+function asEx(r){return !!(r&&(r.example||/\b(example|sample|exemple|voorbeeld)\b/i.test(String(r.name||r.note||""))))}
+function asDefaults(){return[{id:"c_hq",name:"HQ",example:0},{id:"c_gz",name:"GZ",example:0},{id:"c_10alfa",name:"10 Alfa",example:0},{id:"c_production",name:"Production",example:0},{id:"c_terex",name:"Terex",example:0},{id:"c_workshop",name:"Workshop",example:0},{id:"c_crusher",name:"Mobile Crusher",example:0},{id:"c_spare",name:"Spare",example:0}]}
+function asCampRows(){const rows=all("c").filter(c=>c&&c.name);return rows.length?rows.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))):asDefaults()}
+function asCamp(id){return asCampRows().find(c=>c.id===id)||null}
+function asCampName(id){const c=asCamp(id);if(!c)return id||t("asNo");return c.name+(c.example?" · "+t("asEx"):"")}
+function asEnsureCamps(){const u=me();if(!u||!u.admin)return;const at=new Date().toISOString();const have=all("c");const byId={};have.forEach(c=>byId[c.id]=c);asDefaults().forEach(c=>{if(byId[c.id])return;put("c",c.id,{id:c.id,name:c.name,example:0,by:u.name,at:at})})}
+function asEnsureMachines(){if(all("a").some(a=>a.master))return;const u=me();if(!u||!u.admin)return;const at=new Date().toISOString();AS_MASTER.forEach(row=>{const name=row[0],serial=row[1],type=row[2],campId=row[3]||"";const id=asFixedId(serial);if(asItem(id)||all("a").some(x=>String(x.serial||"").toLowerCase()===serial.toLowerCase()))return;const c=campId?asCamp(campId):null;put("a",id,{id:id,type:type,name:name,serial:serial,fuelId:asFuelId(serial),campId:campId,campName:c?c.name:"",holder:"",cond:"good",ph:"",by:u.name,at:at,master:1,idFixed:1})})}
+function asItem(id){return all("a").find(x=>x.id===id)||null}
+function asPendFor(id){return all("r").filter(r=>r.status==="pending"&&r.assetId===id)}
+function asPending(){return all("r").filter(r=>r.status==="pending").sort((a,b)=>String(b.at).localeCompare(String(a.at)))}
+function asMoves(id){return all("m").filter(m=>m.assetId===id).sort((a,b)=>String(b.at).localeCompare(String(a.at)))}
+function asListRows(){
+  const q=String(AS.q||"").trim().toLowerCase();
+  const items=all("a").map(a=>({kind:"a",row:a,pend:asPendFor(a.id)[0]||null}));
+  all("r").filter(r=>r.status==="pending"&&r.typ==="add").forEach(r=>items.push({kind:"r",row:r,pend:r}));
+  return items.filter(it=>{
+    const a=it.row;
+    if(AS.fltType!=="all"&&a.type!==AS.fltType)return false;
+    const camp=a.campId||"";
+    if(AS.fltCamp!=="all"&&camp!==AS.fltCamp)return false;
+    if(!q)return true;
+    return String(a.name||"").toLowerCase().indexOf(q)>=0||String(a.serial||"").toLowerCase().indexOf(q)>=0;
+  }).sort((x,y)=>String(x.row.name||"").localeCompare(String(y.row.name||"")));
+}
+addReport({id:"asCamp",title:{en:"Count per camp",fr:"Nombre par camp",ar:"العدد حسب المخيم",af:"Getal per kamp"},
+  cols:[{key:"camp",label:{en:"Camp",fr:"Camp",ar:"مخيم",af:"Kamp"}},{key:"n",label:{en:"Items",fr:"Articles",ar:"العناصر",af:"Items"},num:true,sum:true}],
+  rows:(f,to)=>{const g={};all("a").forEach(a=>{const k=a.campName||asCampName(a.campId)||t("asNo");g[k]=(g[k]||0)+1});return Object.keys(g).sort().map(k=>({camp:k,n:g[k]}))}});
+addReport({id:"asType",title:{en:"Count per type",fr:"Nombre par type",ar:"العدد حسب النوع",af:"Getal per tipe"},
+  cols:[{key:"type",label:{en:"Type",fr:"Type",ar:"النوع",af:"Tipe"}},{key:"n",label:{en:"Items",fr:"Articles",ar:"العناصر",af:"Items"},num:true,sum:true}],
+  rows:(f,to)=>{const g={};all("a").forEach(a=>{const k=asTy(a.type);g[k]=(g[k]||0)+1});return Object.keys(g).sort().map(k=>({type:k,n:g[k]}))}});
+addReport({id:"asFix",title:{en:"Broken or needs repair",fr:"Cassé ou à réparer",ar:"معطوب أو يحتاج إلى إصلاح",af:"Stuk of moet herstel word"},
+  cols:[{key:"name",label:{en:"Item",fr:"Article",ar:"العنصر",af:"Item"}},{key:"type",label:{en:"Type",fr:"Type",ar:"النوع",af:"Tipe"}},{key:"camp",label:{en:"Camp",fr:"Camp",ar:"مخيم",af:"Kamp"}},{key:"cond",label:{en:"Condition",fr:"État",ar:"الحالة",af:"Toestand"}}],
+  rows:(f,to)=>all("a").filter(a=>a.cond==="repair"||a.cond==="broken").sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(a=>({name:a.name,type:asTy(a.type),camp:a.campName||asCampName(a.campId),cond:asCond(a.cond)}))});
+function workHTML(u){
+  asEnsureCamps();asEnsureMachines();
+  if(!canKind("a","view")&&!canKind("r","view"))return `<div class="box"><p>${esc(t("noAccess"))}</p></div>`;
+  if(AS.screen==="form")return asFormHTML(u);
+  if(AS.screen==="detail")return asDetailHTML(u);
+  if(AS.screen==="move")return asMoveHTML(u);
+  if(AS.screen==="approvals")return asApprHTML(u);
+  if(AS.screen==="camps")return asCampsHTML(u);
+  if(AS.screen==="campform")return asCampForm(u);
+  return asListHTML(u);
+}
+function asListHTML(u){
+  const rows=asListRows();
+  const row=it=>{
+    const a=it.row,pend=it.pend,wait=!!pend;
+    const camp=a.campName||asCampName(a.campId);
+    const openId=it.kind==="r"?("r:"+a.id):a.id;
+    return `<button type="button" class="uli asOpen" id="asRow_${esc(a.id)}" data-open="${esc(openId)}">${asThumb(a,"ui asPicT")}<span class="ut"><span class="n">${esc(a.name||t("asNo"))}${asEx(a)?" · "+esc(t("asEx")):""}</span><small>${esc(asTy(a.type))}${a.serial?" · "+esc(a.serial):""} · ${esc(camp)}</small><small>${esc(asCond(a.cond||"good"))}${a.holder?" · "+esc(a.holder):""}${wait?" · ":""}${wait?esc(t("asWait")):""}</small></span><span class="ch">›</span></button>`;
+  };
+  const nPend=asPending().length;
+  return `<div class="box" id="asList"><h2>${asLogo(28)} ${esc(t("asTitle"))}</h2><p class="hint">${esc(t("asSample"))}</p>
+  ${u.admin?`<div class="rpAct">${nPend?`<button type="button" id="asApprBtn">${esc(t("asAppr"))} (${nPend})</button>`:`<button type="button" class="sec" id="asApprBtn">${esc(t("asAppr"))}</button>`}<button type="button" class="sec" id="asCampsBtn">${esc(t("asCamps"))}</button></div>`:""}
+  ${canKind("a","add")||canKind("r","add")?`<button type="button" id="asNew">${esc(t("asNew"))}</button>`:""}
+  <label for="asQ">${esc(t("asSearch"))}</label><input id="asQ" type="search" value="${esc(AS.q)}" placeholder="${esc(t("asSearch"))}" autocomplete="off">
+  <label for="asFltCamp">${esc(t("asCamp"))}</label><select id="asFltCamp"><option value="all">${esc(t("asAll"))}</option>${asCampRows().map(c=>`<option value="${esc(c.id)}"${AS.fltCamp===c.id?" selected":""}>${esc(c.name)}${c.example?" ("+esc(t("asEx"))+")":""}</option>`).join("")}</select>
+  <label for="asFltType">${esc(t("asType"))}</label><select id="asFltType"><option value="all">${esc(t("asAll"))}</option>${AS_TYPES.map(k=>`<option value="${k}"${AS.fltType===k?" selected":""}>${esc(asTy(k))}</option>`).join("")}</select>
+  ${rows.length?rows.map(row).join(""):`<p class="hint" id="asEmpty">${esc(AS.fltType==="all"&&AS.fltCamp==="all"&&!AS.q?t("asNone"):t("asNoneF"))}</p>`}</div>`;
+}
+function asFields(a){
+  a=a||{};
+  const typ=AS._type||a.type||"vehicle",pic=(AS._pic&&asPicCat(AS._pic)===typ)?AS._pic:asPicKey(Object.assign({},a,{type:typ})),cond=AS._cond||a.cond||"good",camp=a.campId||"";
+  const condBtn=(k,lab)=>`<button type="button" class="sec${cond===k?" on":""}" data-ascond="${k}">${esc(lab)}</button>`;
+  return `<label for="asName">${esc(t("asName"))}</label><input id="asName" data-draft="asName" type="text" autocomplete="off" spellcheck="true" autocapitalize="words" placeholder="${esc(t("asNameH"))}" value="${esc(a.name||"")}">
+  <label for="asType">${esc(t("asType"))}</label><div class="typ" id="asTyp">${AS_PICS.map(k=>`<button type="button" class="${pic===k?"on":""}" data-aspic="${k}" title="${esc(asTy(asPicCat(k)))}" aria-label="${esc(asTy(asPicCat(k)))}">${asPicHTML(k)}</button>`).join("")}</div><select id="asType">${AS_TYPES.map(k=>`<option value="${k}"${typ===k?" selected":""}>${esc(asTy(k))}</option>`).join("")}</select>
+  <label for="asSerial">${esc(t("asSerial"))}</label><input id="asSerial" data-draft="asSerial" type="text" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="${esc(t("asSerialH"))}" value="${esc(a.serial||"")}"${a.serial?" readonly":""}>${a.serial?`<p class="hint">${esc(t("asIdFixed"))}</p>`:""}
+  <label for="asCamp">${esc(t("asCamp"))}</label><select id="asCamp" data-draft="asCamp">${asCampRows().map(c=>`<option value="${esc(c.id)}"${c.id===camp?" selected":""}>${esc(c.name)}${c.example?" ("+esc(t("asEx"))+")":""}</option>`).join("")}</select>
+  <label for="asHolder">${esc(t("asHolder"))}</label><input id="asHolder" data-draft="asHolder" type="text" autocomplete="off" spellcheck="true" autocapitalize="words" placeholder="${esc(t("asHolderH"))}" value="${esc(a.holder||"")}">
+  <p class="hint">${esc(t("asCond"))}</p><div class="rpBar" id="asCondBar">${condBtn("good",t("asGood"))}${condBtn("repair",t("asRepair"))}${condBtn("broken",t("asBroken"))}</div>
+  <p class="hint">${esc(t("asPhoto"))}</p>${photoHTML("asPhPick")}<img id="asPic" class="phPrev" alt="" style="${AS.pendingPhoto||(a.ph&&AS.thumbs[a.ph])?"max-height:180px;width:100%;object-fit:contain;background:#f8fafc":"display:none"}"${AS.pendingPhoto||(a.ph&&AS.thumbs[a.ph])?` src="${esc(AS.pendingPhoto||AS.thumbs[a.ph])}"`:""}>`;
+}
+function asFormHTML(u){
+  const edit=!!AS.edit,item=edit?asItem(AS.id):null;
+  if(edit&&!item){AS.screen="list";AS.edit=0;return asListHTML(u)}
+  return `<div class="box" id="asForm"><h2>${esc(edit?t("asChange"):t("asNew"))}</h2>
+  ${asFields(item||{})}
+  <p class="err" id="asErr"${AS.err?' style="display:block"':""}>${esc(AS.err||"")}</p><p class="hint" id="drNote" style="display:none">${esc(t("draft"))}</p>
+  <button type="button" id="asSave">${esc(t("asSave"))}</button></div>`;
+}
+function asPic(ph){const st="max-height:110px;width:100%;object-fit:contain;background:#f8fafc";const src=AS.thumbs[ph];if(src)return `<img id="asPic" class="phPrev" alt="" style="${st}" src="${esc(src)}">`;return `<img id="asPic" class="phPrev" alt="" data-phid="${esc(ph)}" style="display:none;${st}">`}
+function asDetailHTML(u){
+  if(String(AS.id||"").indexOf("r:")===0){
+    const r=all("r").find(x=>x.id===String(AS.id).slice(2));
+    if(!r){AS.screen="list";AS.id=null;return asListHTML(u)}
+    return `<div class="box" id="asDetail"><h2>${esc(r.name||t("asDetail"))}</h2>${asThumb(r,"asHero")}
+    <p><span class="st pending">${esc(t("asWait"))}</span> · ${esc(t("asPendAdd"))}${asEx(r)?" · "+esc(t("asEx")):""}</p>
+    <p><b>${esc(asTy(r.type))}</b></p>
+    <p class="hint">${esc(t("asSerial"))}: ${esc(r.serial||t("asNo"))}</p>
+    <p class="hint">${esc(t("asCamp"))}: ${esc(r.campName||asCampName(r.campId))}</p>
+    <p class="hint">${esc(t("asHolder"))}: ${esc(r.holder||t("asNo"))}</p>
+    <p class="hint">${esc(t("asCond"))}: ${esc(asCond(r.cond))}</p>
+    <p class="hint">${esc(t("asBy"))}: ${esc(r.by||"")} · ${esc(asWhen(r.at))}</p>
+    ${r.ph?asPic(r.ph):""}${phBtn(r.ph)}</div>`;
+  }
+  const a=asItem(AS.id);if(!a){AS.screen="list";AS.id=null;return asListHTML(u)}
+  const pend=asPendFor(a.id)[0],hist=asMoves(a.id);
+  const hrow=m=>`<div class="urow asMv" data-mid="${esc(m.id)}"><span class="n">${esc(m.fromName||asCampName(m.fromCampId))} → ${esc(m.toName||asCampName(m.toCampId))}</span><span class="hint">${esc(asWhen(m.at))} · ${esc(t("asBy"))}: ${esc(m.by||"")}${m.note?" · "+esc(m.note):""}${asEx(m)?" · "+esc(t("asEx")):""}</span></div>`;
+  return `<div class="box" id="asDetail"><h2>${esc(a.name)}</h2>${asThumb(a,"asHero")}
+  <p><b>${esc(asTy(a.type))}</b>${asEx(a)?" · "+esc(t("asEx")):""}${pend?` · <span class="st pending" id="asWaitTag">${esc(t("asWait"))}</span>`:""}</p>
+  <p class="hint">${esc(t("asSerial"))}: ${esc(a.serial||t("asNo"))}</p>
+  <p class="hint">${esc(t("asCamp"))}: ${esc(a.campName||asCampName(a.campId))}</p>
+  <p class="hint">${esc(t("asHolder"))}: ${esc(a.holder||t("asNo"))}</p>
+  <p class="hint">${esc(t("asCond"))}: ${esc(asCond(a.cond))}</p>
+  <p class="hint">${esc(t("asBy"))}: ${esc(a.by||"")} · ${esc(asWhen(a.at))}</p>
+  ${fixBtn("a",a.id,"name")}${fixedNote(a)}
+  ${canKind("a","add")||canKind("r","add")?`<button type="button" id="asChange">${esc(t("asChange"))}</button><button type="button" class="sec" id="asMoveBtn">${esc(t("asMove"))}</button>`:""}</div>
+  <div class="box" id="asHist"><h3>${esc(t("asHist"))}</h3>${hist.length?hist.map(hrow).join(""):`<p class="hint">${esc(t("asNoHist"))}</p>`}</div>
+  <div class="box" id="asPicBox"><h3>${esc(t("asPhoto"))}</h3>${a.ph?asPic(a.ph):`<p class="hint">${esc(t("asNo"))}</p>`}${phBtn(a.ph)}</div>`;
+}
+function asMoveHTML(u){
+  const a=asItem(AS.id);if(!a){AS.screen="list";AS.id=null;return asListHTML(u)}
+  return `<div class="box" id="asMove"><h2>${esc(t("asMove"))}</h2>
+  <p><b>${esc(a.name)}</b>${asEx(a)?" · "+esc(t("asEx")):""}</p>
+  <p class="hint">${esc(t("asFrom"))}: ${esc(a.campName||asCampName(a.campId))}</p>
+  <label for="asTo">${esc(t("asMoveTo"))}</label><select id="asTo">${asCampRows().filter(c=>c.id!==a.campId).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.example?" ("+esc(t("asEx"))+")":""}</option>`).join("")}</select>
+  <label for="asHolder">${esc(t("asHolder"))}</label><input id="asHolder" data-draft="asMoveHolder" type="text" autocomplete="off" spellcheck="true" autocapitalize="words" value="${esc(a.holder||"")}">
+  <label for="asNote">${esc(t("asMoveNote"))}</label><textarea id="asNote" data-draft="asMoveNote" rows="2" autocomplete="off" spellcheck="true" placeholder="${esc(t("asMoveNoteH"))}"></textarea>
+  <p class="err" id="asErr"${AS.err?' style="display:block"':""}>${esc(AS.err||"")}</p>
+  <button type="button" id="asSaveMove">${esc(t("asSaveMove"))}</button></div>`;
+}
+function asApprHTML(u){
+  const rows=asPending();
+  const card=r=>{
+    const typ=r.typ==="move"?t("asMove"):r.typ==="edit"?t("asChange"):t("asNew");
+    const bits=[];
+    if(r.typ==="move"){bits.push(t("asFrom")+": "+(r.fromName||asCampName(r.fromCampId)));bits.push(t("asTo")+": "+(r.toName||asCampName(r.toCampId)));if(r.note)bits.push(r.note)}
+    else{bits.push(asTy(r.type));if(r.serial)bits.push(r.serial);bits.push(r.campName||asCampName(r.campId));if(r.holder)bits.push(r.holder);bits.push(asCond(r.cond))}
+    return `<div class="box asReq" id="asReq_${esc(r.id)}" data-rid="${esc(r.id)}"><h3>${esc(r.name||typ)}</h3>
+    <p><span class="st pending">${esc(t("asWait"))}</span> · ${esc(typ)}${asEx(r)?" · "+esc(t("asEx")):""}</p>
+    <p class="hint">${esc(bits.join(" · "))}</p>
+    <p class="hint">${esc(t("asBy"))}: ${esc(r.by||"")} · ${esc(asWhen(r.at))}</p>
+    <button type="button" class="asYes" data-rid="${esc(r.id)}">${esc(t("asApprove"))}</button>
+    <button type="button" class="red asNo" data-rid="${esc(r.id)}">${esc(t("asReject"))}</button></div>`;
+  };
+  return `<div id="asAppr"><div class="box"><h2>${esc(t("asAppr"))}</h2><p class="hint">${esc(t("asApprH"))}</p></div>${rows.length?rows.map(card).join(""):`<div class="box"><p class="hint" id="asNoneAp">${esc(t("asNoneAp"))}</p></div>`}</div>`;
+}
+function asCampsHTML(u){
+  const rows=asCampRows();
+  const line=c=>`<div class="urow asCampRow" data-cid="${esc(c.id)}"><span class="n">${esc(c.name)}</span><span class="hint">${c.example?esc(t("asEx")):""}</span></div>`;
+  return `<div class="box" id="asCamps"><h2>${esc(t("asCamps"))}</h2><p class="hint">${esc(t("asCampsH"))}</p>
+  ${rows.length?rows.map(line).join(""):`<p class="hint">${esc(t("asNoneCamp"))}</p>`}
+  ${u.admin?`<button type="button" id="asNewCamp">${esc(t("asNewCamp"))}</button>`:""}</div>`;
+}
+function asCampForm(u){
+  return `<div class="box" id="asCampForm"><h2>${esc(t("asNewCamp"))}</h2>
+  <label for="asCampName">${esc(t("asCampName"))}</label><input id="asCampName" data-draft="asCampName" type="text" autocomplete="off" spellcheck="true" autocapitalize="words" placeholder="${esc(t("asCampNameH"))}">
+  <p class="err" id="asErr"${AS.err?' style="display:block"':""}>${esc(AS.err||"")}</p>
+  <button type="button" id="asSaveCamp">${esc(t("asSaveCamp"))}</button></div>`;
+}
+function asGo(screen,extra){AS.err="";AS.screen=screen;if(extra)Object.assign(AS,extra);render()}
+function asReadForm(){
+  const name=($("asName")||{}).value||"";
+  const serial=($("asSerial")||{}).value||"";
+  const holder=($("asHolder")||{}).value||"";
+  const campId=($("asCamp")||{}).value||"";
+  const c=asCamp(campId);
+  const r={name:name.trim(),serial:serial.trim(),holder:holder.trim(),campId:campId,campName:c?c.name:"",type:($("asType")&&$("asType").value)||AS._type||"vehicle",cond:AS._cond||"good",pic:""};
+  r.pic=(AS._pic&&asPicCat(AS._pic)===r.type&&AS_VICON[AS._pic])?AS._pic:"";return r;
+}
+function asClearDrafts(){["asName","asSerial","asHolder","asCamp","asMoveHolder","asMoveNote","asCampName"].forEach(draftClear)}
+function asSaveItem(u){
+  const f=asReadForm();
+  const cur=AS.edit?asItem(AS.id):null;
+  if(AS.edit&&!cur){asErr(t("asNone"));return}
+  if(!f.name){asErr(t("asNeedName"));return}
+  if(!f.type||AS_TYPES.indexOf(f.type)<0){asErr(t("asNeedType"));return}
+  if(!f.campId){asErr(t("asNeedCamp"));return}
+  const serial=(cur&&cur.serial)?cur.serial:f.serial;
+  const isMv=AS_MV.indexOf(f.type)>=0;
+  if(isMv&&!serial){asErr(t("asNeedSerial"));return}
+  if(serial&&all("a").some(x=>x.id!==(cur&&cur.id)&&String(x.serial||"").toLowerCase()===serial.toLowerCase())){asErr(t("asIdUsed"));return}
+  let ph=AS.pendingPhoto?phKeep(AS.pendingPhoto,String(f.name).slice(0,80)):null;
+  if(ph)AS.thumbs[ph]=AS.pendingPhoto;
+  if(cur){
+    if(!ph)ph=cur.ph||"";
+    if(asPendFor(cur.id).length){asErr(t("asHasPend"));return}
+    const data=Object.assign({},cur,{id:cur.id,type:f.type,pic:f.pic,name:f.name,serial:serial,campId:f.campId,campName:f.campName,holder:f.holder,cond:f.cond,ph:ph||"",by:cur.by,at:cur.at,updBy:u.name,updAt:new Date().toISOString(),example:asEx({name:f.name})||asEx(cur)?1:0,idFixed:cur.idFixed||(serial?1:0)});
+    if(u.admin){if(put("a",cur.id,data)===false)return}
+    else{
+      const rid="r"+Date.now();
+      if(put("r",rid,Object.assign({},data,{id:rid,typ:"edit",status:"pending",assetId:cur.id,by:u.name,at:new Date().toISOString()}))===false)return;
+    }
+  }else{
+    const id=isMv&&serial?asFixedId(serial):("a"+Date.now()),at=new Date().toISOString();
+    if(isMv&&serial&&asItem(id)){asErr(t("asIdUsed"));return}
+    const data={id:id,type:f.type,pic:f.pic,name:f.name,serial:serial,campId:f.campId,campName:f.campName,holder:f.holder,cond:f.cond,ph:ph||"",by:u.name,at:at,example:asEx({name:f.name})?1:0,idFixed:serial?1:0};
+    if(u.admin){if(put("a",id,data)===false)return}
+    else{
+      const rid="r"+Date.now();
+      if(put("r",rid,Object.assign({},data,{id:rid,typ:"add",status:"pending",assetId:id}))===false)return;
+    }
+  }
+  AS.pendingPhoto=null;AS.edit=0;asClearDrafts();afterSave(true);
+}
+function asSaveMove(u){
+  const a=asItem(AS.id);if(!a)return;
+  if(asPendFor(a.id).length){asErr(t("asHasPend"));return}
+  const toId=($("asTo")||{}).value||"",to=asCamp(toId),holder=(($("asHolder")||{}).value||"").trim(),note=(($("asNote")||{}).value||"").trim();
+  if(!toId||!to){asErr(t("asNeedTo"));return}
+  if(toId===a.campId){asErr(t("asNeedDiff"));return}
+  const at=new Date().toISOString();
+  const body={assetId:a.id,name:a.name,fromCampId:a.campId,fromName:a.campName||asCampName(a.campId),toCampId:toId,toName:to.name,holder:holder,note:note,by:u.name,at:at,example:asEx(a)||asEx({name:note})?1:0};
+  if(u.admin){
+    if(asApplyMove(a,body)===false)return;
+  }else{
+    const id="r"+Date.now();
+    if(put("r",id,{id:id,typ:"move",status:"pending",...body})===false)return;
+  }
+  asClearDrafts();afterSave(true);
+}
+function asApplyMove(a,body){
+  const mid="m"+Date.now();
+  if(put("m",mid,{id:mid,...body})===false)return false;
+  const next=Object.assign({},a,{campId:body.toCampId,campName:body.toName,holder:body.holder!=null&&body.holder!==""?body.holder:a.holder,updBy:body.by,updAt:body.at});
+  if(put("a",a.id,next)===false)return false;
+  return true;
+}
+function asApprove(id,u){
+  const r=all("r").find(x=>x.id===id);if(!r||r.status!=="pending")return false;
+  if(r.typ==="add"){
+    const data={id:r.assetId||("a"+Date.now()),type:r.type,pic:r.pic||"",name:r.name,serial:r.serial,campId:r.campId,campName:r.campName,holder:r.holder,cond:r.cond,ph:r.ph||"",by:r.by,at:r.at,example:r.example?1:0,okBy:u.name,okAt:new Date().toISOString()};
+    if(put("a",data.id,data)===false)return false;
+  }else if(r.typ==="edit"){
+    const cur=asItem(r.assetId);if(!cur)return false;
+    const data=Object.assign({},cur,{type:r.type,pic:r.pic||"",name:r.name,serial:cur.serial||r.serial,campId:r.campId,campName:r.campName,holder:r.holder,cond:r.cond,ph:r.ph||cur.ph||"",updBy:r.by,updAt:r.at,okBy:u.name,okAt:new Date().toISOString(),idFixed:cur.idFixed||((cur.serial||r.serial)?1:0)});
+    if(put("a",cur.id,data)===false)return false;
+  }else if(r.typ==="move"){
+    const cur=asItem(r.assetId);if(!cur)return false;
+    if(asApplyMove(cur,r)===false)return false;
+  }
+  if(put("r",r.id,Object.assign({},r,{status:"approved",decidedBy:u.name,decidedAt:new Date().toISOString()}))===false)return false;
+  return true;
+}
+function asReject(id,u){
+  const r=all("r").find(x=>x.id===id);if(!r||r.status!=="pending")return false;
+  if(put("r",r.id,Object.assign({},r,{status:"rejected",decidedBy:u.name,decidedAt:new Date().toISOString()}))===false)return false;
+  return true;
+}
+function asSaveCamp(u){
+  const name=asNormCamp((($("asCampName")||{}).value||"").trim());if(!name){asErr(t("asNeedCampN"));return}
+  const exist=asCampRows().find(c=>asNormCamp(c.name).toLowerCase()===name.toLowerCase());
+  if(exist){asErr(t("asNeedCampN"));return}
+  const id=name==="10 Alfa"?"c_10alfa":("c"+Date.now());
+  if(put("c",id,{id:id,name:name,example:asEx({name:name})?1:0,by:u.name,at:new Date().toISOString()})===false)return;
+  draftClear("asCampName");afterSave(true);
+}
+function bindWork(u){
+  asNav();asEnsureCamps();asEnsureMachines();
+  const on=(id,f)=>{const e=$(id);if(e)e.onclick=f};
+  on("asNew",()=>{AS._type="vehicle";AS._pic="car";AS._cond="good";AS.pendingPhoto=null;asGo("form",{edit:0,id:null})});
+  on("asSave",()=>asSaveItem(u));
+  on("asSaveMove",()=>asSaveMove(u));
+  on("asSaveCamp",()=>asSaveCamp(u));
+  on("asApprBtn",()=>asGo("approvals"));
+  on("asCampsBtn",()=>asGo("camps"));
+  on("asNewCamp",()=>asGo("campform"));
+  on("asChange",()=>{const a=asItem(AS.id);AS._type=(a&&a.type)||"vehicle";AS._pic=asPicKey(a);AS._cond=(a&&a.cond)||"good";AS.pendingPhoto=null;asGo("form",{edit:1})});
+  on("asMoveBtn",()=>asGo("move"));
+  const ft=$("asFltType");if(ft)ft.onchange=()=>{AS.fltType=ft.value;render()};
+  const typ=$("asType");const picOn=()=>document.querySelectorAll("[data-aspic]").forEach(x=>x.classList.toggle("on",x.dataset.aspic===AS._pic));
+  if(typ)typ.onchange=()=>{AS._type=typ.value;if(asPicCat(AS._pic)!==AS._type)AS._pic=AS._type==="vehicle"?"car":AS._type;picOn()};
+  document.querySelectorAll("[data-aspic]").forEach(b=>b.onclick=()=>{AS._pic=b.dataset.aspic;AS._type=asPicCat(AS._pic);if(typ)typ.value=AS._type;picOn()});
+  document.querySelectorAll("[data-ascond]").forEach(b=>b.onclick=()=>{AS._cond=b.dataset.ascond;document.querySelectorAll("[data-ascond]").forEach(x=>x.classList.toggle("on",x.dataset.ascond===AS._cond))});
+  document.querySelectorAll(".asOpen").forEach(b=>b.onclick=()=>asGo("detail",{id:b.dataset.open,edit:0}));
+  document.querySelectorAll(".asYes").forEach(b=>b.onclick=()=>{asApprove(b.dataset.rid,u);render()});
+  document.querySelectorAll(".asNo").forEach(b=>b.onclick=()=>{asReject(b.dataset.rid,u);render()});
+  const q=$("asQ");if(q){q.oninput=()=>{AS.q=q.value};q.onchange=()=>{AS.q=q.value;render()};q.onkeydown=e=>{if(e.key==="Enter"){AS.q=q.value;render()}}}
+  const fc=$("asFltCamp");if(fc)fc.onchange=()=>{AS.fltCamp=fc.value;render()};
+  bindPhoto("asPhPick",d=>{AS.pendingPhoto=d;const im=$("asPic");if(im){im.src=d;im.style.display="block";im.style.maxHeight="180px";im.style.width="100%";im.style.objectFit="contain"}asErr("")});
+  const im=$("asPic");if(im&&im.dataset.phid){const id=im.dataset.phid;phQ.get(id).then(o=>{if(o&&o.d){AS.thumbs[id]=o.d;const e=$("asPic");if(e){e.src=o.d;e.style.display="block"}}}).catch(()=>{})}
+  bindFix();
+}
+function asNav(){
+  if(asNav.done||!window.TMC.nav)return;asNav.done=1;const N=window.TMC.nav;
+  N.keys.push(o=>{if(o.t==="work"){o.sc=AS.screen;o.ai=AS.id||"";o.ed=AS.edit?1:0}return o});
+  N.sets.push(o=>{if(o.sc){AS.screen=o.sc;AS.id=o.ai||null;AS.edit=o.ed?1:0;AS.pendingPhoto=null}});
+  N.ups.push(()=>{if(tab!=="work")return false;let to=null;if(AS.screen==="move"||(AS.screen==="form"&&AS.edit))to="detail";else if(AS.screen==="campform")to="camps";else if(AS.screen==="detail"||AS.screen==="form"||AS.screen==="approvals"||AS.screen==="camps")to="list";else return false;AS.screen=to;AS.pendingPhoto=null;if(to==="list"){AS.id=null;AS.edit=0}N.st=N.st.filter(k=>{try{const o=JSON.parse(k);return !(o.t==="work"&&o.sc&&o.sc!=="list")}catch(e){return true}});return true});
+  N.dirty.push(()=>tab==="work"&&AS.screen==="form"&&!!AS.pendingPhoto);
+  N.clear.push(()=>{AS.pendingPhoto=null});
+}
+const _asView=viewHTML,_asBind=bindMain;
+viewHTML=function(u){
+  let h=_asView(u);
+  if(tab==="home"&&u&&u.admin){
+    const n=asPending().length;
+    if(n)h+=`<div class="box" id="asHomeBox"><button type="button" id="asHomeAp">${esc(t("asAppr"))} (${n})</button><p class="hint">${esc(t("asWait"))}</p></div>`;
+  }
+  return h;
+};
+bindMain=function(u){
+  _asBind(u);
+  const e=$("asHomeAp");if(e)e.onclick=()=>{tab="work";asGo("approvals")};
+};
+window.TMC.as=()=>AS;window.TMC.asPending=asPending;window.TMC.asApprove=asApprove;window.TMC.asReject=asReject;window.TMC.asItem=asItem;window.TMC.asCamps=asCampRows;window.TMC.asWhen=asWhen;window.TMC.AS_TZ=AS_TZ;window.TMC.AS_MASTER=AS_MASTER;window.TMC.AS_MV=AS_MV;window.TMC.asFixedId=asFixedId;window.TMC.asFuelId=asFuelId;window.TMC.asNormCamp=asNormCamp;window.TMC.asEnsureMachines=asEnsureMachines;
+/* ==================== APP FEATURES END ==================== */
+
+function canHTML(u){
+  if(u.admin)return `<div class="box"><h2>✅ ${esc(t("can"))}</h2><p><b>${esc(t("canAll"))}</b></p></div>`;
+  return `<div class="box" id="canBox"><h2>✅ ${esc(t("can"))}</h2><p class="hint">${esc(t("canH"))}</p>${(C.PERMS||[]).map(p=>`<div class="canR ${can(p.id,u)?"yes":"no"}" data-cp="${esc(p.id)}"><span class="ci">${can(p.id,u)?"✅":"⬜"}</span><span>${esc(p.icon)} ${esc(permLab(p))}</span></div>`).join("")}<p class="hint">${esc(t("canAdm"))}</p></div>`;
+}
+function permTicks(u){
+  if(u.admin||u.status!=="active"&&u.status!=="pending")return "";
+  const lk=k=>`<div class="permT lock"><span>${esc(t(k))}<small> · ⭐ ${esc(t("admOnly"))}</small></span><span style="flex:none;font-size:24px">🔒</span></div>`;
+  return `<div class="permBox" data-pu="${esc(u.id)}"><div class="hint">${esc(t("canEd"))} ${esc(u.name)}:</div>${(C.PERMS||[]).map(p=>`<label class="permT${permsOf(u).indexOf(p.id)>=0?" on":""}"><span>${esc(p.icon)} ${esc(permLab(p))}</span><input type="checkbox" data-pu="${esc(u.id)}" data-pp="${esc(p.id)}"${permsOf(u).indexOf(p.id)>=0?" checked":""}></label>`).join("")}${lk("lkFix")}${lk("lkApp")}</div>`;
+}
+let openU=null; // Admin users list: which person is open (list form like Purchases)
+function usersHTML(me_){
+  const U=users(),lab={pending:t("pend"),active:t("act"),rejected:t("rej"),blocked:t("blk")};
+  const sum=u=>u.admin?"⭐ "+t("admin"):((C.PERMS||[]).filter(p=>can(p.id,u)).map(p=>p.icon+" "+permLab(p)).join(" · ")||"—");
+  const ico={pending:"⏳",active:"🟢",rejected:"⛔",blocked:"🚫"};
+  const row=u=>{const o=openU===u.id||u.status==="pending";return `<div class="urow ulr" data-uid="${esc(u.id)}" style="display:block;padding:0;border:0"><button type="button" class="uli" data-open="${esc(u.id)}"><span class="ui">${ico[u.status]||"👤"}</span><span class="ut"><span class="n">${esc(u.name)}</span> <span class="st ${esc(u.status)}">${esc(lab[u.status]||u.status)}</span><small>${esc(sum(u))}</small></span><span class="ch">${o?"⌄":"›"}</span></button>${o?`<div class="uopen"><div class="acts">
+   ${u.status==="pending"?`<button type="button" class="sm" data-ua="approve" data-id="${esc(u.id)}">${esc(t("approve"))}</button>${isMain(u)?"":`<button type="button" class="sm red" data-ud="reject" data-id="${esc(u.id)}">${esc(t("reject"))}</button>`}`:""}
+   ${u.status==="active"&&u.id!==me_.id&&!isMain(u)?`<button type="button" class="sm red" data-ud="block" data-id="${esc(u.id)}">${esc(t("block"))}</button>`:""}
+   ${(u.status==="blocked"||u.status==="rejected")&&!isMain(u)?`<button type="button" class="sm red" data-ud="${u.status==="blocked"?"block":"reject"}" data-id="${esc(u.id)}">${esc(t("dscOld"))}</button>`:""}
+   ${u.status==="active"&&(u.pinH||u.hasPin)&&u.id!==me_.id?`<button type="button" class="sm sec" data-ua="reset" data-id="${esc(u.id)}">${esc(t("resetPin"))}</button>`:""}</div>${permTicks(u)}</div>`:""}</div>`};
+  const pend=U.filter(u=>u.status==="pending"),rest=U.filter(u=>u.status!=="pending").sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  return `<div class="box"><h3>⏳ ${esc(t("pend"))}</h3>${pend.length?pend.map(row).join(""):`<p class="hint">${esc(t("noPend"))}</p>`}</div><div class="box"><h3>👥 ${esc(t("users"))}</h3>${rest.map(row).join("")}</div>`;
+}
+/* VER 7 (Johan 31 Oct 2026): Block / Reject = DISCARD. The user record is taken off the phone and the Sheet (server checks Admin token,
+   never the signed-in Admin, never the last Admin) and its old PIN/token stop working. The person may send a fresh request later (→ Pending). */
+function discardWhy(u){if(isMain(u))return "dscMain";const m=me();if(!m||!m.admin)return "dscTok";if(u.id===m.id)return "dscSelf";
+  if(u.admin&&!users().some(x=>x.id!==u.id&&x.admin&&x.status==="active"))return "dscLast";if(!canFix())return "dscTok";return ""}
+/* Main Admin = an APPROVED Admin whose name is jakirsten or any ADMIN_ALIASES name: never removed, blocked, demoted or renamed away
+   (Reset PIN still allowed). A pending request using an alias is NOT protected, so it can still be rejected. */
+function isMain(u){return !!u&&!!u.admin&&u.status==="active"&&NK(u.name)===ADMIN_KEY}
+function mainKept(d){return !!d&&!!d.admin&&d.status==="active"&&NK(d.name)===ADMIN_KEY}
+function discardUser(id){const u=users().find(x=>x.id===id);if(!u)return false;const w=discardWhy(u);if(w){toast(t(w));return false}
+  const k="u:"+id;R[k]={kind:"u",id:String(id),u:Math.max(Date.now(),R[k]?R[k].u+1:0),del:1,data:{discarded:1,at:new Date().toISOString()}};dirty[k]=1;saveR();syncSoon();
+  if(openU===id)openU=null;toast(t("dscDone").replace("%n",u.name));render();return true}
+window.TMC.discardUser=discardUser;window.TMC.discardWhy=discardWhy;window.TMC.isMain=isMain;
+function discardModal(id,why,again){const u=users().find(x=>x.id===id);if(!u)return;const w=discardWhy(u);
+  if(w==="dscTok"&&!again&&me()&&me().admin&&!sTok()){relogNo=0;return Promise.resolve(syncNow()).then(()=>discardModal(id,why,1),()=>discardModal(id,why,1))}  // Admin token missing: fetch one first
+  if(w)return toast(t(w));
+  const m=document.createElement("div");m.className="modal";m.id="dscM";
+  m.innerHTML=`<div class="card dsc"><h2>${esc(t(why==="reject"?"dscRT":"dscBT").replace("%n",u.name))}</h2><p class="hint" style="font-size:18px">${esc(t("dscH").replace("%n",u.name))}</p><button type="button" class="red" id="dscY">${esc(t("dscY"))}</button><button type="button" class="sec" id="dscN">${esc(t("dscN"))}</button></div>`;
+  document.body.appendChild(m);const x=()=>m.remove();$("dscN").onclick=x;m.onclick=e=>{if(e.target===m)x()};$("dscY").onclick=()=>{x();discardUser(id)}}
+function bindUsers(){
+  document.querySelectorAll("[data-ud]").forEach(b=>b.onclick=()=>discardModal(b.dataset.id,b.dataset.ud));
+  document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{openU=openU===b.dataset.open?null:b.dataset.open;render()});
+  document.querySelectorAll("[data-ua]").forEach(b=>b.onclick=()=>{
+    const u=Object.assign({},users().find(x=>x.id===b.dataset.id));if(!u.id)return;const a=b.dataset.ua;
+    if(a==="approve"||a==="unblock")u.status="active";if(a==="reject")u.status="rejected";if(a==="block")u.status="blocked";
+    if(a==="reset"){delete u.pinH;delete u.salt;delete u.hasPin;u.pinReset=Date.now()}
+    if(a==="approve"&&!Array.isArray(u.perms))u.perms=(C.PERM_DEFAULT||[]).slice();
+    put("u",u.id,u);render()});
+  document.querySelectorAll("input[data-pp]").forEach(b=>b.onchange=()=>{
+    const u=Object.assign({},users().find(x=>x.id===b.dataset.pu));if(!u.id||u.admin)return;
+    const s=new Set(permsOf(u));if(b.checked)s.add(b.dataset.pp);else s.delete(b.dataset.pp);
+    u.perms=(C.PERMS||[]).map(p=>p.id).filter(id=>s.has(id));put("u",u.id,u);render()});
+}
+function settingsHTML(u){
+  const lo=+(L.get("lastOk")||0);
+  return `<div class="box"><h3>🌐 ${esc(t("lang"))}</h3>${langBtns()}</div>
+  <div class="box"><h3>🔄 ${esc(t("sync"))}</h3><p class="hint" id="sLine"></p><p class="hint">${esc(t("last"))}: ${lo?esc(new Date(lo).toLocaleDateString(dLoc(),{day:"numeric",month:"short",year:"numeric"})+" "+hm(new Date(lo))):"—"}</p><button type="button" id="hSync">${esc(t("syncNow"))}</button>
+  ${u.admin?`<label class="hint">${esc(t("syncUrl"))}</label><div class="pw"><input id="sUrl" class="msk" type="text" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" name="${C.APP_ID}-su" value="${esc(sUrl())}"><button type="button" class="eye" data-eye="sUrl">👁</button></div>
+  <label class="hint">${esc(t("syncCode"))}</label><div class="pw"><input id="sCode" class="msk" type="text" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" name="${C.APP_ID}-sc" value="${esc(sCode())}"><button type="button" class="eye" data-eye="sCode">👁</button></div>
+  <button type="button" class="sec" id="sSave">${esc(t("save"))}</button>`:""}</div>
+  <div class="box"><h3>ℹ️ ${esc(t("ver"))} ${C.VER}</h3><button type="button" class="sec" id="uChk">${esc(t("updChk"))}</button><p class="hint" id="uMsg"></p></div>
+  <div class="box"><button type="button" class="sec" id="hShare">📤 ${esc(t("share"))}</button>${insHTML()}<button type="button" class="sec loBand" id="sOut">${esc(t("logout"))}</button><button type="button" class="sec" id="sWipe">${esc(t("wipe"))}</button></div>`;
+}
+function bindMain(u){
+  {const hl=$("hLang");if(hl)hl.onchange=()=>{lang=hl.value;L.set("lang",lang);render()}}
+  bindCommon();
+  document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render()});
+  const on=(id,f)=>{const e=$(id);if(e)e.onclick=f};
+  on("hSync",()=>syncNow());on("hShare",shareModal);
+  on("sSave",()=>{relogNo=0;L.set("syurl",$("sUrl").value.trim());L.set("sycode",$("sCode").value.trim());L.del("since");syncNow().then(render)});
+  on("uChk",()=>checkUpdate(true));
+  on("sOut",logout);on("hOut",logout);on("sWipe",wipe);
+  if(tab==="work")bindWork(u);if(tab==="reports")bindRep(u);if(tab==="users")bindUsers();
+  draftBind(u);
+}
+async function logout(){
+  const u=me();if(!u)return;
+  if(pending()&&sUrl()&&navigator.onLine)await syncNow();
+  const n=pending();
+  if(!confirm(n?t("logoutPend").replace("%n",n):t("logoutQ").replace("%n",u.name)))return;
+  signOut();tab="home";render();
+}
+async function wipe(){
+  if(pending()&&sUrl()&&navigator.onLine)await syncNow();
+  const n=pending();if(!confirm(n?t("wipePend").replace("%n",n):t("wipeQ")))return;
+  await wipeThisApp();location.reload();
+}
+// Deletes ONLY this app's keys, caches and service worker. Other TMC apps are untouched.
+async function wipeThisApp(){
+  try{if(phDbP){(await phDbP).close();phDbP=null}await new Promise(r=>{const q=indexedDB.deleteDatabase(P+"photos");q.onsuccess=q.onerror=q.onblocked=()=>r()})}catch(e){}  // VER 9: only THIS app's photo queue
+  Object.keys(localStorage).filter(k=>k.indexOf(P)===0).forEach(k=>localStorage.removeItem(k));
+  try{const ks=await caches.keys();await Promise.all(ks.filter(k=>k.indexOf(CACHE_PREFIX)===0).map(k=>caches.delete(k)))}catch(e){}
+  try{const rg=await navigator.serviceWorker.getRegistration("./");if(rg&&new URL(rg.scope).href===new URL("./",location.href).href)await rg.unregister()}catch(e){}
+}
+window.TMC.wipeThisApp=wipeThisApp;
+
+/* ---------------- Drafts ---------------- */
+const dKey=(u,k)=>"draft_"+NK(u.name)+"_"+k;
+function draftBind(u){document.querySelectorAll("[data-draft]").forEach(el=>{const k=dKey(u,el.dataset.draft),v=L.get(k);if(v&&!el.value){el.value=v;const n=$("drNote");if(n)n.style.display="block"}
+  el.addEventListener("input",()=>{if(el.value)L.set(k,el.value);else L.del(k)})})}
+function draftClear(k){const u=me();if(u)L.del(dKey(u,k))}
+window.TMC.draftClear=draftClear;
+
+/* ---------------- Sync status + unsynced warning ---------------- */
+let pendSince=0;
+function paintNc(){const w=$("ncW");if(!w)return;const off=!sUrl(),show=off||netBad;w.style.display=show?"block":"none";if(!show)return;
+  w.innerHTML=`<b>${esc(t("ncT"))}</b><span>${esc(off?t("ncOff"):t("ncH"))}</span>${off?"":`<button type="button" id="ncB">${esc(t("retry"))}</button>`}`;
+  const b=$("ncB");if(b)b.onclick=()=>{if(syncOn())syncNow();else api({action:"status",name:"x"}).catch(()=>{})}}
+function paintSync(){paintNc();
+  const d=$("sDot");if(d)d.className="dot "+(!syncOn()?"":sState==="busy"?"busy":sState==="err"||!navigator.onLine?"err":sState==="ok"?"ok":"");
+  const tm=$("sTime");if(tm){const lo=+(L.get("lastOk")||0),d0=new Date(lo);tm.textContent=lo?(new Date().toDateString()===d0.toDateString()?hm(d0):d0.toLocaleDateString(dLoc(),{day:"numeric",month:"short"})+" "+hm(d0)):"—"}
+  const s=$("sLine");if(s)s.textContent=!syncOn()?t("syncOff"):!navigator.onLine?t("offline"):sState==="err"?t("syncErr"):t("synced");
+  const w=$("pendW");if(!w)return;const n=sUrl()?pending():0;
+  if(!n){pendSince=0;w.style.display="none";return}if(!pendSince)pendSince=Date.now();
+  const show=!navigator.onLine||sState==="err"||Date.now()-pendSince>6000;w.style.display=show?"block":"none";if(!show)return;
+  w.innerHTML=`${esc(t("pwT").replace("%n",n))}${navigator.onLine?"":`<small>${esc(t("pwOff"))}</small>`}<small>${esc(t("pwDel"))}</small><button type="button" id="pwB">${esc(t("syncNow"))}</button>`;
+  $("pwB").onclick=()=>syncNow();
+}
+setInterval(paintSync,2000);addEventListener("online",paintSync);addEventListener("offline",paintSync);
+/* VER 6: small plain message at the bottom (no OK button) */
+function toast(m){let w=$("tmcToast");if(!w){w=document.createElement("div");w.id="tmcToast";w.setAttribute("role","status");w.style.cssText="position:fixed;left:12px;right:12px;bottom:84px;z-index:9999;background:#7c2d12;color:#fff;padding:14px 16px;border-radius:12px;font-size:17px;line-height:1.35;box-shadow:0 4px 14px rgba(0,0,0,.3);text-align:center";document.body.appendChild(w)}w.textContent=m;w.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>{w.style.display="none"},7000)}
+window.TMC.toast=toast;
+function onData(){const u=me();if(flow&&flow.s==="wait"&&!u){/* stay */}if(!u&&L.get("uid")){signOut();render();return}
+  const a=document.activeElement;if(u&&!formDirty&&!(a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA")))render()}
+
+/* ---------------- Auto-update (service worker) ----------------
+   VER 11: on open and on coming back to the foreground the app checks for a new version. If one is found it
+   locks saves (put() refuses), shows a full-screen "Updating… please wait", activates the new worker and reloads.
+   Offline / check fails: nothing happens, the app works normally, it tries again next open. Saved records live in
+   localStorage / IndexedDB (APP_ID_ keys), so a reload never loses unsynced work. */
+let reg=null,updReady=false,updLock=false,updT0=0;
+function paintUpd(){const w=$("updW");if(!w)return;w.style.display=updReady?"block":"none";if(updReady){w.innerHTML=`${esc(t("updT"))}<button type="button" id="updB">${esc(t("updB"))}</button>`;$("updB").onclick=applyUpdate}}
+function updScreen(on){let o=$("updGo");if(!on){if(o)o.remove();return}if(!o){o=document.createElement("div");o.id="updGo";o.setAttribute("role","alert");document.body.appendChild(o)}
+  o.innerHTML=`<img src="icons/icon-192.png" alt=""><i></i><b>${esc(t("updGo"))}</b><span>${esc(t("updGo2"))}</span>`}
+function updOn(){if(updLock)return;updLock=true;updT0=Date.now();try{const a=document.activeElement;if(a&&a.blur)a.blur()}catch(e){}updScreen(1);
+  setTimeout(()=>{if(updLock&&!(reg&&reg.waiting)&&Date.now()-updT0>=45000)updOff()},45000)}   // download stuck: let staff work, retry next open
+function updOff(){updLock=false;updScreen(0)}
+function applyUpdate(){updOn();if(reg&&reg.waiting)reg.waiting.postMessage("skip");else location.reload();setTimeout(()=>location.reload(),8000)}
+function checkUpdate(manual){if(!reg)return;reg.update().then(()=>{if(manual){const m=$("uMsg");if(m)m.textContent=reg.waiting||reg.installing?t("updT"):t("updNone")}}).catch(()=>{})}
+window.TMC.checkUpdate=checkUpdate;window.TMC.updLock=()=>updLock;
+if("serviceWorker" in navigator&&location.protocol!=="file:"){
+  let reloading=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(reloading)return;reloading=true;location.reload()});
+  const hook=r=>{if(!r||reg)return;reg=r;   // ready answers at once when installed; register() can wait for the network
+    const watch=w=>{if(!w||!navigator.serviceWorker.controller)return;updOn();w.addEventListener("statechange",()=>{if(w.state==="installed"){updReady=true;paintUpd();applyUpdate()}else if(w.state==="redundant"&&!r.waiting)updOff()})};
+    if(r.waiting&&navigator.serviceWorker.controller){updReady=true;applyUpdate()}
+    else{watch(r.installing);checkUpdate()}
+    r.addEventListener("updatefound",()=>watch(r.installing));
+    setInterval(()=>checkUpdate(),30*60000)};
+  if(navigator.serviceWorker.controller)navigator.serviceWorker.ready.then(r=>{if(new URL(r.scope).href===new URL("./",location.href).href)hook(r)}).catch(()=>{});
+  navigator.serviceWorker.register("sw.js",{scope:"./"}).then(hook).catch(e=>console.warn("sw",e));
+}
+
+/* ---------------- Install button + iPhone hint ---------------- */
+let bip=null;
+const typing=()=>{const a=document.activeElement;return !!(a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA")&&a.value)};
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();bip=e;if(!typing())render()});
+addEventListener("appinstalled",()=>{bip=null;render()});
+const standalone=()=>(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
+const isIos=()=>/iphone|ipad|ipod/i.test(navigator.userAgent);
+function insHTML(){if(standalone())return "";if(bip)return `<button type="button" class="insB">${esc(t("insBtn"))}</button>`;if(isIos())return `<div class="insH">${esc(t("insIos"))}</div>`;return ""}
+function bindIns(){document.querySelectorAll(".insB").forEach(b=>b.onclick=async()=>{if(!bip)return;bip.prompt();try{await bip.userChoice}catch(e){}bip=null;render()})}
+
+/* ---------------- Share app + QR ---------------- */
+function shareModal(){
+  const url=C.SHARE_URL||new URL("./",location.href).href;
+  const m=document.createElement("div");m.className="modal";
+  m.innerHTML=`<div class="card"><h2>📤 ${esc(t("share"))}</h2>${C.SHARE_URL?`<img class="qr" src="icons/qr.png" alt="QR">`:""}<p class="hint">${esc(t("shareH"))}</p><p style="word-break:break-all"><b>${esc(url)}</b></p>
+  ${navigator.share?`<button type="button" id="shS">${esc(t("shareB"))}</button>`:""}<button type="button" class="sec" id="shC">${esc(t("copy"))}</button><button type="button" class="sec" id="shX">${esc(t("close"))}</button></div>`;
+  document.body.appendChild(m);
+  const x=()=>m.remove();$("shX").onclick=x;m.onclick=e=>{if(e.target===m)x()};
+  if($("shS"))$("shS").onclick=()=>navigator.share({title:C.NAME,url:url}).catch(()=>{});
+  $("shC").onclick=()=>{try{navigator.clipboard.writeText(url).then(()=>{$("shC").textContent=t("copied")})}catch(e){}};
+}
+
+/* VER 10 BACK: a big "← Back" bar at the TOP of every screen except Home (staff-friendly).
+   Order: 1) one level up inside the screen (report → report list, app hooks), 2) the screen's own top Back
+   button if it has one (kept, made big), 3) the previous screen, 4) Home. A half-filled form asks
+   "Leave without saving?" Yes / No first. Bottom tabs are unchanged. Apps extend window.TMC.nav. */
+Object.assign(T.en,{navBack:"← Back",navLeave:"Leave without saving?",navYes:"Yes",navNo:"No"});
+Object.assign(T.fr,{navBack:"← Retour",navLeave:"Quitter sans enregistrer ?",navYes:"Oui",navNo:"Non"});
+if(T.af)Object.assign(T.af,{navBack:"← Terug",navLeave:"Gaan weg sonder om te stoor?",navYes:"Ja",navNo:"Nee"});
+if(T.ar)Object.assign(T.ar,{navBack:"← رجوع",navLeave:"خروج بدون حفظ؟",navYes:"نعم",navNo:"لا"});
+const NAV={st:[],last:"",up:0,skip:0,pass:0,sticky:0,saved:0,keys:[],sets:[],ups:[],sel:[],dirty:[],clear:[]};
+NAV.ups.push(()=>{if(tab==="reports"&&typeof rp!=="undefined"&&rp.id&&REPORTS.length>1){rp.id=null;return true}return false});
+function navKey(){let o={t:tab};NAV.keys.forEach(f=>{o=f(o)||o});return JSON.stringify(o)}
+function navTyped(){return [...document.querySelectorAll("#view input,#view textarea")].some(el=>{const ty=(el.type||"").toLowerCase();if(el.disabled||el.readOnly||/^(button|submit|reset|hidden|checkbox|radio|range|color)$/.test(ty))return false;if(ty==="file")return !!(el.files&&el.files.length);const v=(el.value||"").trim();if(!v)return false;return /^(date|time|datetime-local|month|week)$/.test(ty)?el.value!==el.defaultValue:true})}
+function navDirty(){return NAV.dirty.some(f=>{try{return !!f()}catch(e){return false}})||((!!formDirty||!!NAV.sticky)&&navTyped())}
+function navGoBack(){
+  if(NAV.ups.some(f=>{try{return f()}catch(e){return false}})){NAV.skip=1;render();scrollTo(0,0);return}
+  const cur=NAV.last;for(;;){let k=null;while(NAV.st.length){k=NAV.st.pop();if(k!==NAV.last&&k!==cur)break;k=null}
+  const o=k?JSON.parse(k):{t:"home"};tab=o.t;NAV.sets.forEach(f=>f(o));NAV.skip=1;render();if(!k||NAV.last!==cur)break}scrollTo(0,0);
+}
+function navAsk(yes){
+  const m=document.createElement("div");m.className="modal navAsk";m.id="navAsk";
+  m.innerHTML=`<div class="card"><h2>${esc(t("navLeave"))}</h2><button type="button" class="red" id="navYes">${esc(t("navYes"))}</button><button type="button" class="sec" id="navNo">${esc(t("navNo"))}</button></div>`;
+  document.body.appendChild(m);$("navNo").onclick=()=>m.remove();$("navYes").onclick=()=>{m.remove();yes()};
+}
+function navClear(){const u=me();if(u)document.querySelectorAll("#view [data-draft]").forEach(el=>L.del(dKey(u,el.dataset.draft)));NAV.clear.forEach(f=>{try{f()}catch(e){}});formDirty=0;NAV.sticky=0}
+document.addEventListener("click",e=>{const b=e.target&&e.target.closest&&e.target.closest(".navBack");if(!b)return;if(NAV.pass||!navDirty()){NAV.up=1;return}
+  e.preventDefault();e.stopImmediatePropagation();navAsk(()=>{navClear();NAV.pass=1;try{b.click()}finally{NAV.pass=0}})},true);
+function navAfter(){
+  const V=$("view");if(!V||!me())return;
+  const k=navKey();
+  if(NAV.skip)NAV.skip=0;else if(NAV.last&&k!==NAV.last){const i=NAV.st.lastIndexOf(k);if(i>=0)NAV.st.length=i;else if(!NAV.up)NAV.st.push(NAV.last)}NAV.up=0;
+  NAV.last=k;if(NAV.st.length>30)NAV.st.shift();
+  if(tab==="home"){NAV.st=[];return}
+  let b=null;const sel=NAV.sel.join(",");
+  if(sel){const c=V.querySelector(sel);if(c&&c.parentNode===V){let p=c.previousElementSibling,top=true;while(p){if(p.matches(".box,.tiles,table,form,.vgrid"))top=false;p=p.previousElementSibling}if(top)b=c}}
+  if(b){b.classList.add("navBack");b.textContent=t("navBack");V.insertBefore(b,V.firstChild)}
+  else{V.insertAdjacentHTML("afterbegin",`<button type="button" class="navBack" id="navBack">${esc(t("navBack"))}</button>`);$("navBack").onclick=navGoBack}
+}
+/* typing stays "unsaved" across redraws of the SAME screen (e.g. a pick that redraws the form) until a save or a screen change */
+{const r0=render;render=function(){const was=formDirty,k0=NAV.last;r0.apply(this,arguments);navAfter();if(NAV.last!==k0||NAV.saved)NAV.sticky=0;else if(was)NAV.sticky=1;NAV.saved=0};window.TMC.render=render}
+{const p0=put;put=function(){NAV.sticky=0;NAV.saved=1;return p0.apply(this,arguments)}}
+{const m0=remove;remove=function(){NAV.sticky=0;NAV.saved=1;return m0.apply(this,arguments)}}
+/* VER 12 SAVE-CLOSE (Johan, 5 Nov 2026): after a SUCCESSFUL Save, close the form and
+   return to the previous screen (same as the grey ← Back). Failures stay on the form with
+   what was typed. Offline saves that are queued on the phone (put wrote + dirty) count as
+   success. Apps: after put(...)!==false call TMC.afterSave(true) instead of render(); on
+   validation fail just return (stay). Do not auto-go-back from put itself — only form Saves. */
+function afterSave(ok){if(ok===false)return false;navClear();NAV.saved=1;navGoBack();return true}
+window.TMC.nav=NAV;window.TMC.navBack=navGoBack;window.TMC.navDirty=navDirty;window.TMC.afterSave=afterSave;
+/* VER 10 BACK END + VER 12 SAVE-CLOSE */
+render();
+if(syncOn())syncNow();else if(sUrl())api({action:"status",name:"-"}).catch(()=>{});  // probe so "Not connected" shows on a fresh phone too
+})();
+/* SPELLCHECK START — phone spellcheck on every free-text box (names, items, notes).
+   Never on PIN / number / sync / code / masked fields. Covers boxes built later too. */
+(function(){
+  var SKIP=/pin|url|code|sync|pass|qty|price|amount|num|date|email|phone|tel/i;
+  function want(el){
+    if(el.hasAttribute("data-nospell")||el.classList.contains("msk")||el.classList.contains("mk")||el.readOnly||(el.getAttribute("autocapitalize")||"")==="characters")return false;
+    if(el.tagName==="TEXTAREA")return true;
+    var ty=(el.getAttribute("type")||"text").toLowerCase();
+    if(ty!=="text"&&ty!=="search")return false;
+    var im=(el.getAttribute("inputmode")||"").toLowerCase();
+    if(im==="numeric"||im==="decimal"||im==="tel"||im==="email"||im==="url")return false;
+    if(SKIP.test((el.id||"")+" "+(el.name||"")+" "+(el.className||"")))return false;
+    return true;
+  }
+  function fix(el){
+    if(!want(el)){if(el.tagName==="INPUT"||el.tagName==="TEXTAREA"){el.spellcheck=false;el.setAttribute("spellcheck","false")}return}
+    el.spellcheck=true;el.setAttribute("spellcheck","true");el.setAttribute("autocorrect","on");
+    var nm=/name|who/i.test((el.id||"")+" "+(el.name||""))&&el.tagName!=="TEXTAREA";
+    el.setAttribute("autocapitalize",nm?"words":"sentences");
+  }
+  function scan(root){if(!root||!root.querySelectorAll)return;if(root.matches&&root.matches("input,textarea"))fix(root);root.querySelectorAll("input,textarea").forEach(fix)}
+  window.TMC_spell=scan;
+  function go(){scan(document.body);new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(scan)})}).observe(document.body,{childList:true,subtree:true})}
+  if(document.body)go();else document.addEventListener("DOMContentLoaded",go);
+})();
+/* SPELLCHECK END */
+</script>
+</body></html>
