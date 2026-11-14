@@ -24,7 +24,8 @@
   "CACHE_PREFIX": "tmcassets",
   "NAME": "TMC Assets",
   "SHORT": "TMC Assets",
-  "VER": 10,
+  "VER": 11,
+  "VERSION": "1.11.0",
   "COLOR": "#0e7490",
   "COLOR_DARK": "#155e75",
   "REPORT_COLOR": "#1B7F3B",
@@ -41,7 +42,7 @@
     {"id":"export","icon":"📤","en":"Export","fr":"Exporter","ar":"تصدير","af":"Stuur uit"}
   ],
   "PERM_DEFAULT": ["view","add"],
-  "PERM_KINDS": {"x":{"view":"view","add":"add"},"a":{"view":"view","add":"add"},"r":{"view":"view","add":"add"},"m":{"view":"view","add":"add"},"c":{"view":"view","add":"add"},"p":{"view":"view","add":"add"}}
+  "PERM_KINDS": {"x":{"view":"view","add":"add"},"a":{"view":"view","add":"add"},"r":{"view":"view","add":"add"},"m":{"view":"view","add":"add"},"c":{"view":"view","add":"add"},"p":{"view":"view","add":"add"},"l":{"view":"view","add":"add"}}
 }/*END*/;</script>
 <title>TMC Assets</title>
 <link rel="manifest" href="manifest.json">
@@ -79,6 +80,8 @@ header img{width:36px;height:36px;border-radius:8px}header .t{flex:1;min-width:0
 header{min-height:56px;flex-wrap:nowrap}header .hS{display:flex;align-items:center;gap:6px;font-size:14px;white-space:nowrap}header .dot{border:2px solid #fff}
 header .hLang{width:auto;min-height:56px;min-width:64px;margin:0;padding:0 8px;border:2px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:17px;font-weight:700}header .hLang option{color:#0f172a}
 @media (max-width:380px){header{gap:6px;padding:8px 10px}header img{width:30px;height:30px}header .t{font-size:17px}}
+/* v1.11.0 version label (TMC version standard): small 10px charcoal text directly under the app name; never wraps */
+header .t{display:flex;flex-direction:column;justify-content:center;line-height:1.15}header .tN{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}header .hVer{display:block;font-size:10px;line-height:1.2;font-weight:600;color:#333333;white-space:nowrap}html[dir=rtl] header .hVer{text-align:right}.asPlOpen .n{display:block;overflow-wrap:anywhere}
 .dot{width:14px;height:14px;border-radius:50%;background:#94a3b8;display:inline-block}.dot.ok{background:#22c55e}.dot.err{background:#ef4444}.dot.busy{background:#f59e0b}
 main{padding:12px 12px 110px;max-width:600px;margin:0 auto}
 nav.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #cbd5e1;z-index:10;padding-bottom:env(safe-area-inset-bottom)}
@@ -302,6 +305,8 @@ const all=kind=>Object.keys(R).map(k=>R[k]).filter(r=>r.kind===kind&&!r.del).map
 /* PERMISSIONS: the Admin ticks what each person may do (CONFIG.PERMS). Admin = everything. The server checks too. */
 function permsOf(u){return u&&Array.isArray(u.perms)?u.perms:(C.PERM_DEFAULT||[])}
 function can(p,u){u=u||me();return !!u&&(!!u.admin||permsOf(u).indexOf(p)>=0)}
+/* TMC version standard (Johan 14 Nov 2026): label under the app name = app version only, e.g. v1.11.0; sw.js cache tmcassets-v1.11.0 */
+function verLabel(){return "v"+(C.VERSION||C.VER)}
 function canKind(kind,what,u){const k=(C.PERM_KINDS||{})[kind];return !k||!k[what]||can(k[what],u)}
 function permLab(p){return p[lang]||p.en}
 /* VER 6 ADMIN FIX RULE (phone): role + token decide, never the team code alone. Admin with a token = fix, even if a team code is saved.
@@ -411,7 +416,7 @@ function render(){
   if(!u){A.innerHTML=signinHTML();bindSignin();return}
   flow=null;
   if(tab==="users"&&!u.admin)tab="home";if(tab==="work"&&!workOk(u))tab="home";if(tab==="reports"&&!(repOk(u)&&REPORTS.length))tab="home";
-  A.innerHTML=`<header id="hBand"><img class="asLogo" src="icons/icon-192.png" alt="TMC Assets" width="36" height="36"><div class="t">${esc(C.SHORT)}</div><span class="hS" id="hS"><span id="sDot" class="dot"></span><span id="sTime" class="sTime"></span></span><select id="hLang" class="hLang" aria-label="Language">${LANGS.map(l=>`<option value="${l}"${l===lang?" selected":""}>${l.toUpperCase()}</option>`).join("")}</select></header>
+  A.innerHTML=`<header id="hBand"><img class="asLogo" src="icons/icon-192.png" alt="TMC Assets" width="36" height="36"><div class="t"><span class="tN">${esc(C.SHORT)}</span><span class="hVer" id="hVer" dir="ltr">${esc(verLabel())}</span></div><span class="hS" id="hS"><span id="sDot" class="dot"></span><span id="sTime" class="sTime"></span></span><select id="hLang" class="hLang" aria-label="Language">${LANGS.map(l=>`<option value="${l}"${l===lang?" selected":""}>${l.toUpperCase()}</option>`).join("")}</select></header>
   <main><div id="ncW" class="bar ncW"></div><div id="updW" class="bar updW"></div><div id="pendW" class="bar pendW"></div><div id="view">${viewHTML(u)}</div></main>
   <nav class="tabs">${tabsOf(u).map(x=>navBtn(...x)).join("")}</nav>`;
   bindMain(u);paintSync();paintUpd();fitTabs();
@@ -667,7 +672,7 @@ function bindRep(u){const on=(id,fn)=>{const e=$(id);if(e)e.onclick=fn};
 Object.assign(window.TMC,{addReport:addReport,REPORTS:REPORTS,XL:XL,repXlsx:repXlsx,rpData:rpData,sendXls:sendXls,repOk:repOk,rp:()=>rp});
 /* ==================== APP FEATURES START ====================
    TMC Assets sample. Kinds: a approved item, r pending add/edit/move,
-   m applied move, c camp, p photo, x kept for the base suite.
+   m applied move, c camp, p photo, l place (v1.11.0), x kept for the base suite.
    Staff changes are stored as r and do not change the item until Admin
    Approve. Admin Save applies at once. Successful Save calls TMC.afterSave(true).
    Times use 24-hour Africa/Ndjamena. SYNC_URL stays empty (Not connected yet). */
@@ -760,8 +765,8 @@ function asReadExtra(type){const o={},mach=asIsMach(type);AS_FK.forEach(k=>{cons
 function asPickExtra(r){const o={};AS_FK.forEach(k=>{o[k]=r&&r[k]!=null?r[k]:""});return o}
 function asHasVal(v){return v!=null&&String(v).trim()!==""}
 function asFHas(f,a){return asHasVal(a&&a[f[0]])}
-function asCampVal(a){if(asHasVal(a&&a.campName))return String(a.campName).trim();return asHasVal(a&&a.campId)?asCampName(a.campId):""}
-function asBaseView(a){const camp=asCampVal(a);return (asHasVal(a.serial)?`<p class="hint" data-f="serial">${esc(t("asSerial"))}: ${esc(String(a.serial).trim())}</p>`:"")+(camp?`<p class="hint" data-f="camp">${esc(t("asCamp"))}: ${esc(camp)}</p>`:"")+(asHasVal(a.holder)?`<p class="hint" data-f="holder">${esc(t("asHolder"))}: ${esc(String(a.holder).trim())}</p>`:"")+(asHasVal(a.cond)?`<p class="hint" data-f="cond">${esc(t("asCond"))}: ${esc(asCond(a.cond))}</p>`:"")}
+function asCampVal(a){if(a&&AS_CAMP_DN[a.campId])return AS_CAMP_DN[a.campId];if(asHasVal(a&&a.campName))return String(a.campName).trim();return asHasVal(a&&a.campId)?asCampName(a.campId):""}
+function asBaseView(a){const camp=asWhere(a);return (asHasVal(a.serial)?`<p class="hint" data-f="serial">${esc(t("asSerial"))}: ${esc(String(a.serial).trim())}</p>`:"")+(camp?`<p class="hint" data-f="camp">${esc(t("asCamp"))}: ${esc(camp)}</p>`:"")+(asHasVal(a.holder)?`<p class="hint" data-f="holder">${esc(t("asHolder"))}: ${esc(String(a.holder).trim())}</p>`:"")+(asHasVal(a.cond)?`<p class="hint" data-f="cond">${esc(t("asCond"))}: ${esc(asCond(a.cond))}</p>`:"")}
 function asFVal(f,a){const k=f[0],v=a[k]==null?"":String(a[k]).trim();if(!v)return "—";
   if(f[1]==="date"){const d=new Date(v+"T12:00:00Z");return isNaN(d.getTime())?v:d.toLocaleDateString(dLoc(),{timeZone:"UTC",day:"numeric",month:"short",year:"numeric"})}
   if(f[1]==="sel")return t(AS_STL[v]||"")||v;
@@ -779,7 +784,7 @@ const AS_VICON={car:'<path d="M14 52 L22 34 Q26 28 34 28 H78 Q86 28 92 34 L102 4
 const AS_VPIC=["car","tipper","dropside","tanker"];
 const AS_PICS=["car","tipper","dropside","tanker","crane","telehandler","skidsteer","tlb","excavator","pecker","flowbin","generator","bowser","tent","starlink","table","bed","container","other"];
 /* Fuel's picture for each Fuel seed machine (Fuel id s_<serial>), from Fuel's own type rules */
-const AS_FUEL_PIC={B052052:"car","0450":"crane",ZTH4018:"telehandler",D327778:"tipper",C310111:"skidsteer",Z403013:"tlb","1E33608":"dropside","1I22938":"tanker",KA00514:"excavator",KA00507:"excavator","Terex 1":"flowbin","Terex 2":"flowbin","938324H":"generator","094847K":"generator","094772K":"generator","094768K":"generator",KA04687:"pecker","6.5KW":"generator","LND10000T-G":"generator","LND10000T-T":"generator"};
+const AS_FUEL_PIC={B052052:"car","0450":"crane",ZTH4018:"telehandler",D327778:"tipper",C310111:"skidsteer",Z403013:"tlb","1E33608":"dropside","1I22938":"tanker",KA00514:"excavator",KA00507:"excavator","Terex 1":"flowbin","Terex 2":"flowbin","938324H":"generator","094847K":"generator","094772K":"generator","094768K":"generator",KA04687:"excavator","6.5KW":"generator","LND10000T-G":"generator","LND10000T-T":"generator"};
 function asFuelGuess(v){const m=((v&&v.model)||"")+" "+((v&&v.note)||"");const t=[[/pecker|breaker|marteau/i,"pecker"],[/excavat|pelle/i,"excavator"],[/tipper|benne|howo/i,"tipper"],[/drop ?side|plateau/i,"dropside"],[/tanker|citerne|kouri/i,"tanker"],[/telli|tele/i,"telehandler"],[/crane|grue/i,"crane"],[/skid/i,"skidsteer"],[/tlb|backhoe|retro/i,"tlb"],[/generat|groupe|perkins|kw\b/i,"generator"],[/bowser/i,"bowser"],[/flowbin|terex/i,"flowbin"],[/cruiser|toyota|car|4x4|hilux|pick/i,"car"]];for(const a of t)if(a[0].test(m))return a[1];return ""}
 function asPicCat(k){return AS_VPIC.indexOf(k)>=0?"vehicle":k}
 function asPicKey(a){a=a||{};const ty=a.type||"other",ok=k=>k&&asPicCat(k)===ty&&AS_PICS.indexOf(k)>=0;
@@ -793,7 +798,7 @@ function asFuelId(serial){return "s_"+String(serial||"").replace(/[^A-Za-z0-9]/g
 function asNormCamp(name){const n=String(name||"").trim().replace(/\s+/g," ");if(/^1\s*Alfa(\s+Camp)?$/i.test(n)||/^10\s*Alfa(\s+Camp)?$/i.test(n))return "10 Alfa";return n}
 /* Master machine/vehicle list from Fuel v38 SEED_V in /workspace/fuel-b38/index.html
    (started from "1026 Diesel Use GZ.xlsx", Vehicles + KM HS + Generator, Oct 2026).
-   Kouri is a fuel supplier, not a machine — left out. Johan (10 Nov 2026): KA00507 = Bucket 2, KA04687 = Bucket 3.
+   Kouri is a fuel supplier, not a machine — left out. Johan (10 Nov 2026): KA00507 = Bucket 2, KA04687 = Bucket 3. Johan (14 Nov 2026): KA04687 is an excavator (XCMG).
    serial is the fixed ID (never changes); the name may be edited later. */
 const AS_MASTER=[
  ["Toyota Cruiser","B052052","vehicle","c_production"],
@@ -812,7 +817,7 @@ const AS_MASTER=[
  ["Generator PERKINS Pi 150P MC PP82576 150KW","094847K","generator","c_crusher"],
  ["Generator PERKINS Pi 150P 1 PP82576 150KW","094772K","generator","c_spare"],
  ["Generator PERKINS Pi 150P 2 PP83576 150KW","094768K","generator","c_spare"],
- ["Bucket 3","KA04687","pecker","c_gz"],
+ ["Bucket 3","KA04687","excavator","c_gz"],
  ["Generator Honda 6.5KW","6.5KW","generator",""],
  ["Generator CNR PHASA 10KW Workshop","LND10000T-G","generator","c_workshop"],
  ["Generator CNR PHASA 10KW Terex","LND10000T-T","generator","c_terex"]
@@ -851,13 +856,86 @@ function asEx(r){return !!(r&&(r.example||/\b(example|sample|exemple|voorbeeld)\
 function asDefaults(){return[{id:"c_hq",name:"HQ",example:0},{id:"c_gz",name:"GZ",example:0},{id:"c_10alfa",name:"10 Alfa",example:0},{id:"c_production",name:"Production",example:0},{id:"c_terex",name:"Terex",example:0},{id:"c_workshop",name:"Workshop",example:0},{id:"c_crusher",name:"Mobile Crusher",example:0},{id:"c_spare",name:"Spare",example:0}]}
 function asCampRows(){const rows=all("c").filter(c=>c&&c.name);return rows.length?rows.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))):asDefaults()}
 function asCamp(id){return asCampRows().find(c=>c.id===id)||null}
-function asCampName(id){const c=asCamp(id);if(!c)return id||t("asNo");return c.name+(c.example?" · "+t("asEx"):"")}
+/* Johan 14 Nov 2026 06:31: camp DISPLAY names (proper names, same in every language). Display only: camp ids, camp records and
+   items' campId/campName are never changed. Other camps (10 Alfa, Production, …) show their stored name. */
+const AS_CAMP_DN={c_hq:"HQ - Headquarters",c_gz:"GZ - Ground Zero"};
+function asCampDn(id,name){return AS_CAMP_DN[id]||name||""}
+function asCampName(id){const c=asCamp(id);if(!c)return asCampDn(id,id)||t("asNo");return asCampDn(c.id,c.name)+(c.example?" · "+t("asEx"):"")}
 function asEnsureCamps(){const u=me();if(!u||!u.admin)return;const at=new Date().toISOString();const have=all("c");const byId={};have.forEach(c=>byId[c.id]=c);asDefaults().forEach(c=>{if(byId[c.id])return;put("c",c.id,{id:c.id,name:c.name,example:0,by:u.name,at:at})})}
 function asEnsureMachines(){if(all("a").some(a=>a.master))return;const u=me();if(!u||!u.admin)return;const at=new Date().toISOString();AS_MASTER.forEach(row=>{const name=row[0],serial=row[1],type=row[2],campId=row[3]||"";const id=asFixedId(serial);if(asItem(id)||all("a").some(x=>String(x.serial||"").toLowerCase()===serial.toLowerCase()))return;const c=campId?asCamp(campId):null;put("a",id,{id:id,type:type,name:name,serial:serial,fuelId:asFuelId(serial),campId:campId,campName:c?c.name:"",holder:"",cond:"good",ph:"",by:u.name,at:at,master:1,idFixed:1})})}
 function asItem(id){return all("a").find(x=>x.id===id)||null}
 function asPendFor(id){return all("r").filter(r=>r.status==="pending"&&r.assetId===id)}
 function asPending(){return all("r").filter(r=>r.status==="pending").sort((a,b)=>String(b.at).localeCompare(String(a.at)))}
 function asMoves(id){return all("m").filter(m=>m.assetId===id).sort((a,b)=>String(b.at).localeCompare(String(a.at)))}
+/* v1.11.0 PLACES (Johan 14 Nov 2026 06:19/06:20/06:24): location = camp + place. Places are their own record kind "l"
+   {id,campId,name,hidden,mergedInto,by,at}. Any staff adds a new place from the item form (no duplicates: trimmed,
+   spaces collapsed, case-insensitive within the camp, max 60). Admin tidies them (rename, hide/show, merge). Lists are A–Z.
+   Old place ids stay valid: a merged place points to its target (mergedInto). Seed: GZ gets Johan's 19 places (AS_PL_SEED) only when it has no places at all. */
+Object.assign(T.en,{asPlace:"Place",asPlaceNone:"No place",asPlaceAdd:"➕ Add new place",asPlaceNewL:"New place name",asPlaceNewH:"e.g. Johan's Tent",asNeedPlace:"Type the new place name.",asPlaces:"Places",asPlacesH:"Admin only. Places under each camp. Staff add new ones from the item form.",asPlNone:"No places in this camp yet.",asPlRename:"Rename",asPlHide:"Hide",asPlShow:"Show",asPlHidden:"Hidden",asPlMerge:"Merge into",asPlMergeGo:"Merge",asPlItems:"Items: {n}",asPlUsed:"That place is already in this camp.",asFromWs:"From Workshop"});
+Object.assign(T.fr,{asPlace:"Lieu",asPlaceNone:"Aucun lieu",asPlaceAdd:"➕ Ajouter un nouveau lieu",asPlaceNewL:"Nom du nouveau lieu",asPlaceNewH:"ex. Tente de Johan",asNeedPlace:"Écrivez le nom du nouveau lieu.",asPlaces:"Lieux",asPlacesH:"Admin seulement. Les lieux de chaque camp. Le personnel en ajoute depuis le formulaire de l'article.",asPlNone:"Pas encore de lieu dans ce camp.",asPlRename:"Renommer",asPlHide:"Masquer",asPlShow:"Afficher",asPlHidden:"Masqué",asPlMerge:"Fusionner dans",asPlMergeGo:"Fusionner",asPlItems:"Articles : {n}",asPlUsed:"Ce lieu existe déjà dans ce camp.",asFromWs:"Depuis l'atelier"});
+Object.assign(T.af,{asPlace:"Plek",asPlaceNone:"Geen plek",asPlaceAdd:"➕ Voeg nuwe plek by",asPlaceNewL:"Naam van nuwe plek",asPlaceNewH:"bv. Johan se Tent",asNeedPlace:"Tik die nuwe plek se naam.",asPlaces:"Plekke",asPlacesH:"Net Admin. Plekke onder elke kamp. Personeel voeg nuwes by op die itemvorm.",asPlNone:"Nog geen plekke in hierdie kamp nie.",asPlRename:"Hernoem",asPlHide:"Versteek",asPlShow:"Wys",asPlHidden:"Weggesteek",asPlMerge:"Voeg saam by",asPlMergeGo:"Voeg saam",asPlItems:"Items: {n}",asPlUsed:"Daardie plek is al in hierdie kamp.",asFromWs:"Van Werkswinkel"});
+Object.assign(T.ar,{asPlace:"المكان",asPlaceNone:"بدون مكان",asPlaceAdd:"➕ إضافة مكان جديد",asPlaceNewL:"اسم المكان الجديد",asPlaceNewH:"مثلاً خيمة يوهان",asNeedPlace:"اكتب اسم المكان الجديد.",asPlaces:"الأماكن",asPlacesH:"للمسؤول فقط. الأماكن داخل كل مخيم. يضيف الموظفون أماكن جديدة من نموذج العنصر.",asPlNone:"لا توجد أماكن في هذا المخيم بعد.",asPlRename:"إعادة تسمية",asPlHide:"إخفاء",asPlShow:"إظهار",asPlHidden:"مخفي",asPlMerge:"دمج في",asPlMergeGo:"دمج",asPlItems:"العناصر: {n}",asPlUsed:"هذا المكان موجود في هذا المخيم بالفعل.",asFromWs:"من الورشة"});
+/* GZ seed list (Johan 14 Nov 2026 06:20 / 06:23 / 06:28; Hendrik's and Pedro's spellings confirmed). Stable ids p_gz_01..p_gz_19 in the order Johan gave them; shown A–Z. */
+const AS_PL_MAX=60,AS_PL_SEED={campId:"c_gz",places:["Johan's Tent","Cliff's Tent","Elton's Tent","Michael's Tent","Ben's Tent","Shaun's Tent","Alex's Tent","Sebastiaan's Tent","Hendrik's Tent","Pedro's Tent","Expats Kitchen","Kitchen","Geology Tent","Hausa Tent","Operators Tent","Military Tent","Chef Tent","Workshop","Service Department"]};
+function asPlClean(n){return String(n||"").trim().replace(/\s+/g," ").slice(0,AS_PL_MAX).trim()}
+function asPlKey(n){return asPlClean(n).toLowerCase()}
+function asPlSort(a,b){return String(a.name||"").localeCompare(String(b.name||""),undefined,{sensitivity:"base"})}
+/* every live (not merged) place of a camp, A–Z; hidden ones only when asked */
+function asPlacesOf(campId,withHidden){return all("l").filter(p=>p&&p.campId===campId&&!p.mergedInto&&(withHidden||!p.hidden)).sort(asPlSort)}
+function asPlace(id){let p=all("l").find(x=>x.id===id)||null,n=0;while(p&&p.mergedInto&&n++<8){const q=all("l").find(x=>x.id===p.mergedInto);if(!q)break;p=q}return p}
+function asPlaceVal(a){if(!a)return "";if(asHasVal(a.placeId)){const p=asPlace(a.placeId);if(p&&asHasVal(p.name))return String(p.name).trim()}return asHasVal(a.placeName)?String(a.placeName).trim():""}
+function asWhere(a){const c=asCampVal(a),p=asPlaceVal(a);return c&&p?c+" · "+p:(c||p)}
+function asPlFind(campId,name){const k=asPlKey(name);return k?asPlacesOf(campId,true).find(p=>asPlKey(p.name)===k)||null:null}
+/* reuse a match in that camp, else create it (any signed-in staff may add a NEW place) */
+function asEnsurePlace(campId,name,u){const nm=asPlClean(name);if(!nm||!campId||!u)return null;const ex=asPlFind(campId,nm);if(ex)return ex;
+  const id="l"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),d={id:id,campId:campId,name:nm,hidden:0,by:u.name,at:new Date().toISOString()};
+  return put("l",id,d)===false?null:d}
+function asEnsurePlaces(){const u=me();if(!u||!u.admin||!(+(L.get("lastOk")||0)))return;const s=AS_PL_SEED;  /* only after this phone has pulled the Sheet once: never overrides Sheet places */
+  if(!asCamp(s.campId)||all("l").some(p=>p&&p.campId===s.campId))return;
+  const at=new Date().toISOString();s.places.forEach((nm,i)=>{const id="p_gz_"+String(i+1).padStart(2,"0");put("l",id,{id:id,campId:s.campId,name:nm,hidden:0,by:u.name,at:at,seed:1})})}
+function asPlaceOpts(campId,cur){const c=cur?asPlace(cur):null,cid=c?c.id:"";const ps=asPlacesOf(campId,true).filter(p=>!p.hidden||p.id===cid);
+  return `<option value="">${esc(t("asPlaceNone"))}</option>`+ps.map(p=>`<option value="${esc(p.id)}"${p.id===cid?" selected":""}>${esc(p.name)}</option>`).join("")+`<option value="__new">${esc(t("asPlaceAdd"))}</option>`}
+function asPlaceFields(sel,campId,cur){return `<label for="${sel}">${esc(t("asPlace"))}</label><select id="${sel}" data-camp="${esc(campId||"")}" data-cur="${esc(cur||"")}">${asPlaceOpts(campId,cur)}</select>
+  <div id="${sel}NewBox" style="display:none"><label for="${sel}New">${esc(t("asPlaceNewL"))}</label><input id="${sel}New" type="text" maxlength="${AS_PL_MAX}" autocomplete="off" spellcheck="true" autocapitalize="words" placeholder="${esc(t("asPlaceNewH"))}"></div>`}
+function asBindPlace(campSel,sel){const cs=$(campSel),ps=$(sel);if(!cs||!ps)return;
+  const nb=()=>{const b=$(sel+"NewBox");if(b)b.style.display=ps.value==="__new"?"block":"none"};
+  const fill=()=>{ps.innerHTML=asPlaceOpts(cs.value,ps.dataset.cur||"");ps.dataset.camp=cs.value;nb()};
+  if(ps.dataset.camp!==cs.value)fill();cs.addEventListener("change",fill);ps.addEventListener("change",nb);nb()}
+function asPlaceNewBad(sel){const s=$(sel);return !!(s&&s.value==="__new"&&!asPlClean(($(sel+"New")||{}).value))}
+function asReadPlace(sel,campId,u){const s=$(sel);if(!s)return {placeId:"",placeName:""};
+  if(s.value==="__new"){const p=asEnsurePlace(campId,($(sel+"New")||{}).value,u);return p?{placeId:p.id,placeName:p.name}:null}
+  const p=s.value?asPlace(s.value):null;return p&&p.campId===campId?{placeId:p.id,placeName:p.name}:{placeId:"",placeName:""}}
+/* Admin tidy */
+function asPlCount(id){return all("a").filter(a=>a.placeId&&(asPlace(a.placeId)||{}).id===id).length}
+function asPlRename(id,name,u){const p=all("l").find(x=>x.id===id);const nm=asPlClean(name);if(!p||!nm||!u||!u.admin)return false;
+  const ex=asPlFind(p.campId,nm);if(ex&&ex.id!==id){asErr(t("asPlUsed"));return false}
+  return put("l",id,Object.assign({},p,{name:nm,updBy:u.name,updAt:new Date().toISOString()}))!==false}
+function asPlHide(id,hide,u){const p=all("l").find(x=>x.id===id);if(!p||!u||!u.admin)return false;return put("l",id,Object.assign({},p,{hidden:hide?1:0,updBy:u.name,updAt:new Date().toISOString()}))!==false}
+function asPlMerge(src,dst,u){const a=all("l").find(x=>x.id===src),b=all("l").find(x=>x.id===dst);if(!a||!b||src===dst||a.campId!==b.campId||b.mergedInto||!u||!u.admin)return false;
+  const at=new Date().toISOString();
+  for(const it of all("a").filter(x=>x.placeId&&(asPlace(x.placeId)||{}).id===src)){if(put("a",it.id,Object.assign({},it,{placeId:b.id,placeName:b.name,updBy:u.name,updAt:at}))===false)return false}
+  return put("l",src,Object.assign({},a,{hidden:1,mergedInto:b.id,updBy:u.name,updAt:at}))!==false}
+function asPlacesHTML(u){
+  const camps=asCampRows();if(!AS.plCamp||!camps.some(c=>c.id===AS.plCamp))AS.plCamp=(camps.find(c=>c.id==="c_gz")||camps[0]||{}).id||"";
+  const rows=asPlacesOf(AS.plCamp,true);
+  const row=p=>{const o=AS.plOpen===p.id,n=asPlCount(p.id),others=rows.filter(x=>x.id!==p.id);
+    return `<div class="asPlRow" data-plid="${esc(p.id)}"><button type="button" class="uli asPlOpen" data-plid="${esc(p.id)}"><span class="ui">📍</span><span class="ut"><span class="n">${esc(p.name)}</span><small>${esc(t("asPlItems").replace("{n}",n))}${p.hidden?" · "+esc(t("asPlHidden")):""}</small></span><span class="ch">${o?"⌄":"›"}</span></button>
+    ${o?`<div class="uopen"><label for="asPlName">${esc(t("asPlRename"))}</label><input id="asPlName" type="text" maxlength="${AS_PL_MAX}" autocomplete="off" spellcheck="true" autocapitalize="words" value="${esc(p.name)}">
+    <div class="rpAct"><button type="button" id="asPlRen">${esc(t("asPlRename"))}</button><button type="button" class="sec" id="asPlHid">${esc(t(p.hidden?"asPlShow":"asPlHide"))}</button></div>
+    ${others.length?`<label for="asPlTo">${esc(t("asPlMerge"))}</label><select id="asPlTo">${others.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select><button type="button" class="sec" id="asPlMrg">${esc(t("asPlMergeGo"))}</button>`:""}</div>`:""}</div>`};
+  return `<div class="box" id="asPlaces"><h2>📍 ${esc(t("asPlaces"))}</h2><p class="hint">${esc(t("asPlacesH"))}</p>
+  <label for="asPlCamp">${esc(t("asCamp"))}</label><select id="asPlCamp">${camps.map(c=>`<option value="${esc(c.id)}"${c.id===AS.plCamp?" selected":""}>${esc(asCampDn(c.id,c.name))}</option>`).join("")}</select>
+  <p class="err" id="asErr"${AS.err?' style="display:block"':""}>${esc(AS.err||"")}</p>
+  ${rows.length?rows.map(row).join(""):`<p class="hint" id="asPlNone">${esc(t("asPlNone"))}</p>`}</div>`;
+}
+function asBindPlaces(u){
+  const c=$("asPlCamp");if(c)c.onchange=()=>{AS.plCamp=c.value;AS.plOpen=null;AS.err="";render()};
+  document.querySelectorAll(".asPlOpen").forEach(b=>b.onclick=()=>{AS.plOpen=AS.plOpen===b.dataset.plid?null:b.dataset.plid;AS.err="";render()});
+  const id=AS.plOpen,on=(k,f)=>{const e=$(k);if(e)e.onclick=f};
+  on("asPlRen",()=>{if(asPlRename(id,($("asPlName")||{}).value,u)){AS.err="";render()}});
+  on("asPlHid",()=>{const p=all("l").find(x=>x.id===id);if(p&&asPlHide(id,!p.hidden,u))render()});
+  on("asPlMrg",()=>{const to=($("asPlTo")||{}).value;if(asPlMerge(id,to,u)){AS.plOpen=null;render()}});
+}
 function asListRows(){
   const q=String(AS.q||"").trim().toLowerCase();
   const items=all("a").map(a=>({kind:"a",row:a,pend:asPendFor(a.id)[0]||null}));
@@ -873,15 +951,15 @@ function asListRows(){
 }
 addReport({id:"asCamp",title:{en:"Count per camp",fr:"Nombre par camp",ar:"العدد حسب المخيم",af:"Getal per kamp"},
   cols:[{key:"camp",label:{en:"Camp",fr:"Camp",ar:"مخيم",af:"Kamp"}},{key:"n",label:{en:"Items",fr:"Articles",ar:"العناصر",af:"Items"},num:true,sum:true}],
-  rows:(f,to)=>{const g={};all("a").forEach(a=>{const k=a.campName||asCampName(a.campId)||t("asNo");g[k]=(g[k]||0)+1});return Object.keys(g).sort().map(k=>({camp:k,n:g[k]}))}});
+  rows:(f,to)=>{const g={};all("a").forEach(a=>{const k=asCampVal(a)||t("asNo");g[k]=(g[k]||0)+1});return Object.keys(g).sort().map(k=>({camp:k,n:g[k]}))}});
 addReport({id:"asType",title:{en:"Count per type",fr:"Nombre par type",ar:"العدد حسب النوع",af:"Getal per tipe"},
   cols:[{key:"type",label:{en:"Type",fr:"Type",ar:"النوع",af:"Tipe"}},{key:"n",label:{en:"Items",fr:"Articles",ar:"العناصر",af:"Items"},num:true,sum:true}],
   rows:(f,to)=>{const g={};all("a").forEach(a=>{const k=asTy(a.type);g[k]=(g[k]||0)+1});return Object.keys(g).sort().map(k=>({type:k,n:g[k]}))}});
 addReport({id:"asFix",title:{en:"Broken or needs repair",fr:"Cassé ou à réparer",ar:"معطوب أو يحتاج إلى إصلاح",af:"Stuk of moet herstel word"},
   cols:[{key:"name",label:{en:"Item",fr:"Article",ar:"العنصر",af:"Item"}},{key:"type",label:{en:"Type",fr:"Type",ar:"النوع",af:"Tipe"}},{key:"camp",label:{en:"Camp",fr:"Camp",ar:"مخيم",af:"Kamp"}},{key:"cond",label:{en:"Condition",fr:"État",ar:"الحالة",af:"Toestand"}}],
-  rows:(f,to)=>all("a").filter(a=>a.cond==="repair"||a.cond==="broken").sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(a=>({name:a.name,type:asTy(a.type),camp:a.campName||asCampName(a.campId),cond:asCond(a.cond)}))});
+  rows:(f,to)=>all("a").filter(a=>a.cond==="repair"||a.cond==="broken").sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(a=>({name:a.name,type:asTy(a.type),camp:asCampVal(a),cond:asCond(a.cond)}))});
 function workHTML(u){
-  asEnsureCamps();asEnsureMachines();
+  asEnsureCamps();asEnsureMachines();asEnsurePlaces();
   if(!canKind("a","view")&&!canKind("r","view"))return `<div class="box"><p>${esc(t("noAccess"))}</p></div>`;
   if(AS.screen==="form")return asFormHTML(u);
   if(AS.screen==="detail")return asDetailHTML(u);
@@ -890,13 +968,14 @@ function workHTML(u){
   if(AS.screen==="camps")return asCampsHTML(u);
   if(AS.screen==="grv")return u.admin?asGrvHTML(u):asListHTML(u);
   if(AS.screen==="campform")return asCampForm(u);
+  if(AS.screen==="places")return u.admin?asPlacesHTML(u):asListHTML(u);
   return asListHTML(u);
 }
 function asListHTML(u){
   const rows=asListRows();
   const row=it=>{
     const a=it.row,pend=it.pend,wait=!!pend;
-    const camp=a.campName||asCampName(a.campId);
+    const camp=asWhere(Object.assign({},a,{campName:a.campName||asCampName(a.campId)}));
     const openId=it.kind==="r"?("r:"+a.id):a.id;
     return `<button type="button" class="uli asOpen" id="asRow_${esc(a.id)}" data-open="${esc(openId)}">${asThumb(a,"ui asPicT")}<span class="ut"><span class="n">${esc(a.name||t("asNo"))}${asEx(a)?" · "+esc(t("asEx")):""}</span><small>${esc(asTy(a.type))}${a.serial?" · "+esc(a.serial):""} · ${esc(camp)}</small>${a.type==="excavator"?`<small class="asImpCard">${esc(asImpLine(a))}</small>`:""}<small>${esc(asCond(a.cond||"good"))}${a.holder?" · "+esc(a.holder):""}${wait?" · ":""}${wait?esc(t("asWait")):""}</small></span><span class="ch">›</span></button>`;
   };
@@ -905,7 +984,7 @@ function asListHTML(u){
   ${u.admin?`<div class="rpAct">${nPend?`<button type="button" id="asApprBtn">${esc(t("asAppr"))} (${nPend})</button>`:`<button type="button" class="sec" id="asApprBtn">${esc(t("asAppr"))}</button>`}<button type="button" class="sec" id="asCampsBtn">${esc(t("asCamps"))}</button></div>${(()=>{const n=asGrvRows().length;return `<button type="button" class="${n?"":"sec"}" id="asGrvBtn">📥 ${esc(t("asGrv"))}${n?" ("+n+")":""}</button>`})()}`:""}
   ${canKind("a","add")||canKind("r","add")?`<button type="button" id="asNew">${esc(t("asNew"))}</button>`:""}
   <label for="asQ">${esc(t("asSearch"))}</label><input id="asQ" type="search" value="${esc(AS.q)}" placeholder="${esc(t("asSearch"))}" autocomplete="off">
-  <label for="asFltCamp">${esc(t("asCamp"))}</label><select id="asFltCamp"><option value="all">${esc(t("asAll"))}</option>${asCampRows().map(c=>`<option value="${esc(c.id)}"${AS.fltCamp===c.id?" selected":""}>${esc(c.name)}${c.example?" ("+esc(t("asEx"))+")":""}</option>`).join("")}</select>
+  <label for="asFltCamp">${esc(t("asCamp"))}</label><select id="asFltCamp"><option value="all">${esc(t("asAll"))}</option>${asCampRows().map(c=>`<option value="${esc(c.id)}"${AS.fltCamp===c.id?" selected":""}>${esc(asCampDn(c.id,c.name))}${c.example?" ("+esc(t("asEx"))+")":""}</option>`).join("")}</select>
   <label for="asFltType">${esc(t("asType"))}</label><select id="asFltType"><option value="all">${esc(t("asAll"))}</option>${AS_TYPES.map(k=>`<option value="${k}"${AS.fltType===k?" selected":""}>${esc(asTy(k))}</option>`).join("")}</select>
   ${rows.length?rows.map(row).join(""):`<p class="hint" id="asEmpty">${esc(AS.fltType==="all"&&AS.fltCamp==="all"&&!AS.q?t("asNone"):t("asNoneF"))}</p>`}</div>`;
 }
@@ -916,7 +995,8 @@ function asFields(a){
   return `<label for="asName">${esc(t("asName"))}</label><input id="asName" data-draft="asName" type="text" autocomplete="off" spellcheck="true" autocapitalize="words" placeholder="${esc(t("asNameH"))}" value="${esc(a.name||"")}">
   <label for="asType">${esc(t("asType"))}</label><div class="typ" id="asTyp">${AS_PICS.map(k=>`<button type="button" class="${pic===k?"on":""}" data-aspic="${k}" title="${esc(asTy(asPicCat(k)))}" aria-label="${esc(asTy(asPicCat(k)))}">${asPicHTML(k)}</button>`).join("")}</div><select id="asType">${AS_TYPES.map(k=>`<option value="${k}"${typ===k?" selected":""}>${esc(asTy(k))}</option>`).join("")}</select>
   <label for="asSerial">${esc(t("asSerial"))}</label><input id="asSerial" data-draft="asSerial" type="text" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="${esc(t("asSerialH"))}" value="${esc(a.serial||"")}"${a.serial||asVin7(a.vin)?" readonly":""}>${a.serial?`<p class="hint">${esc(t("asIdFixed"))}</p>`:""}<p class="err" id="asIdDup"></p>
-  <label for="asCamp">${esc(t("asCamp"))}</label><select id="asCamp" data-draft="asCamp">${asCampRows().map(c=>`<option value="${esc(c.id)}"${c.id===camp?" selected":""}>${esc(c.name)}${c.example?" ("+esc(t("asEx"))+")":""}</option>`).join("")}</select>
+  <label for="asCamp">${esc(t("asCamp"))}</label><select id="asCamp" data-draft="asCamp">${asCampRows().map(c=>`<option value="${esc(c.id)}"${c.id===camp?" selected":""}>${esc(asCampDn(c.id,c.name))}${c.example?" ("+esc(t("asEx"))+")":""}</option>`).join("")}</select>
+  ${asPlaceFields("asPlace",camp||((asCampRows()[0]||{}).id||""),a.placeId||"")}
   <label for="asHolder">${esc(t("asHolder"))}</label><input id="asHolder" data-draft="asHolder" type="text" autocomplete="off" spellcheck="true" autocapitalize="words" placeholder="${esc(t("asHolderH"))}" value="${esc(a.holder||"")}">
   <p class="hint">${esc(t("asCond"))}</p><div class="rpBar" id="asCondBar">${condBtn("good",t("asGood"))}${condBtn("repair",t("asRepair"))}${condBtn("broken",t("asBroken"))}</div>
   ${asExtraFields(a,typ)}
@@ -945,7 +1025,7 @@ function asDetailHTML(u){
   }
   const a=asItem(AS.id);if(!a){AS.screen="list";AS.id=null;return asListHTML(u)}
   const pend=asPendFor(a.id)[0],hist=asMoves(a.id);
-  const hrow=m=>m.typ==="implement"?`<div class="urow asMv asImpRow" data-mid="${esc(m.id)}"><span class="n">${esc(asImpLab(m.fromImp)||t("asNo"))} → ${esc(asImpLab(m.toImp)||t("asNo"))}</span><span class="hint">${esc(asWhen(m.at))} · ${esc(t("asBy"))}: ${esc(m.by||"")}</span></div>`:`<div class="urow asMv" data-mid="${esc(m.id)}"><span class="n">${esc(m.fromName||asCampName(m.fromCampId))} → ${esc(m.toName||asCampName(m.toCampId))}</span><span class="hint">${esc(asWhen(m.at))} · ${esc(t("asBy"))}: ${esc(m.by||"")}${m.note?" · "+esc(m.note):""}${asEx(m)?" · "+esc(t("asEx")):""}</span></div>`;
+  const hrow=m=>m.typ==="workshop"?`<div class="urow asMv asWsRow" data-mid="${esc(m.id)}"><span class="n">${esc(t("asFromWs"))}: ${esc(m.jobName||"")}</span><span class="hint">${esc(asWhen(m.at))} · ${esc(t("asBy"))}: ${esc(m.by||"")}</span></div>`:m.typ==="implement"?`<div class="urow asMv asImpRow" data-mid="${esc(m.id)}"><span class="n">${esc(asImpLab(m.fromImp)||t("asNo"))} → ${esc(asImpLab(m.toImp)||t("asNo"))}</span><span class="hint">${esc(asWhen(m.at))} · ${esc(t("asBy"))}: ${esc(m.by||"")}</span></div>`:`<div class="urow asMv" data-mid="${esc(m.id)}"><span class="n">${esc((asCampDn(m.fromCampId,m.fromName)||asCampName(m.fromCampId))+(m.fromPlaceName?" · "+m.fromPlaceName:""))} → ${esc((asCampDn(m.toCampId,m.toName)||asCampName(m.toCampId))+(m.toPlaceName?" · "+m.toPlaceName:""))}</span><span class="hint">${esc(asWhen(m.at))} · ${esc(t("asBy"))}: ${esc(m.by||"")}${m.note?" · "+esc(m.note):""}${asEx(m)?" · "+esc(t("asEx")):""}</span></div>`;
   return `<div class="box" id="asDetail"><h2>${esc(a.name)}</h2>${asThumb(a,"asHero")}
   <p><b>${esc(asTy(a.type))}</b>${asEx(a)?" · "+esc(t("asEx")):""}${pend?` · <span class="st pending" id="asWaitTag">${esc(t("asWait"))}</span>`:""}</p>
   ${asImpSwitch(a)}
@@ -961,8 +1041,9 @@ function asMoveHTML(u){
   const a=asItem(AS.id);if(!a){AS.screen="list";AS.id=null;return asListHTML(u)}
   return `<div class="box" id="asMove"><h2>${esc(t("asMove"))}</h2>
   <p><b>${esc(a.name)}</b>${asEx(a)?" · "+esc(t("asEx")):""}</p>
-  <p class="hint">${esc(t("asFrom"))}: ${esc(a.campName||asCampName(a.campId))}</p>
-  <label for="asTo">${esc(t("asMoveTo"))}</label><select id="asTo">${asCampRows().filter(c=>c.id!==a.campId).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.example?" ("+esc(t("asEx"))+")":""}</option>`).join("")}</select>
+  <p class="hint">${esc(t("asFrom"))}: ${esc(asWhere(Object.assign({},a,{campName:a.campName||asCampName(a.campId)})))}</p>
+  <label for="asTo">${esc(t("asMoveTo"))}</label><select id="asTo">${asCampRows().filter(c=>c.id!==a.campId).map(c=>`<option value="${esc(c.id)}">${esc(asCampDn(c.id,c.name))}${c.example?" ("+esc(t("asEx"))+")":""}</option>`).join("")}</select>
+  ${asPlaceFields("asToPl",(asCampRows().filter(c=>c.id!==a.campId)[0]||{}).id||"","")}
   <label for="asHolder">${esc(t("asHolder"))}</label><input id="asHolder" data-draft="asMoveHolder" type="text" autocomplete="off" spellcheck="true" autocapitalize="words" value="${esc(a.holder||"")}">
   <label for="asNote">${esc(t("asMoveNote"))}</label><textarea id="asNote" data-draft="asMoveNote" rows="2" autocomplete="off" spellcheck="true" placeholder="${esc(t("asMoveNoteH"))}"></textarea>
   <p class="err" id="asErr"${AS.err?' style="display:block"':""}>${esc(AS.err||"")}</p>
@@ -973,8 +1054,8 @@ function asApprHTML(u){
   const card=r=>{
     const typ=r.typ==="move"?t("asMove"):r.typ==="edit"?t("asChange"):t("asNew");
     const bits=[];
-    if(r.typ==="move"){bits.push(t("asFrom")+": "+(r.fromName||asCampName(r.fromCampId)));bits.push(t("asTo")+": "+(r.toName||asCampName(r.toCampId)));if(r.note)bits.push(r.note)}
-    else{bits.push(asTy(r.type));if(r.serial)bits.push(r.serial);bits.push(r.campName||asCampName(r.campId));if(r.holder)bits.push(r.holder);bits.push(asCond(r.cond))}
+    if(r.typ==="move"){bits.push(t("asFrom")+": "+(asCampDn(r.fromCampId,r.fromName)||asCampName(r.fromCampId))+(r.fromPlaceName?" · "+r.fromPlaceName:""));bits.push(t("asTo")+": "+(asCampDn(r.toCampId,r.toName)||asCampName(r.toCampId))+(r.toPlaceName?" · "+r.toPlaceName:""));if(r.note)bits.push(r.note)}
+    else{bits.push(asTy(r.type));if(r.serial)bits.push(r.serial);bits.push(asWhere(Object.assign({},r,{campName:r.campName||asCampName(r.campId)})));if(r.holder)bits.push(r.holder);bits.push(asCond(r.cond))}
     return `<div class="box asReq" id="asReq_${esc(r.id)}" data-rid="${esc(r.id)}"><h3>${esc(r.name||typ)}</h3>
     <p><span class="st pending">${esc(t("asWait"))}</span> · ${esc(typ)}${asEx(r)?" · "+esc(t("asEx")):""}</p>
     <p class="hint">${esc(bits.join(" · "))}</p>${(()=>{if(r.typ==="move")return "";const cur=r.typ==="edit"?asItem(r.assetId):null,id=cur&&cur.serial?cur.serial:(r.serial||"");const w=[asVinWarn(r.vin,id),r.typ==="add"?asIdWarn(r.serial,r.assetId):""].filter(Boolean);return w.map(x=>`<p class="err asDupWarn" style="display:block">${esc(x)}</p>`).join("")})()}
@@ -986,10 +1067,10 @@ function asApprHTML(u){
 }
 function asCampsHTML(u){
   const rows=asCampRows();
-  const line=c=>`<div class="urow asCampRow" data-cid="${esc(c.id)}"><span class="n">${esc(c.name)}</span><span class="hint">${c.example?esc(t("asEx")):""}</span></div>`;
+  const line=c=>`<div class="urow asCampRow" data-cid="${esc(c.id)}"><span class="n">${esc(asCampDn(c.id,c.name))}</span><span class="hint">${c.example?esc(t("asEx")):""}</span></div>`;
   return `<div class="box" id="asCamps"><h2>${esc(t("asCamps"))}</h2><p class="hint">${esc(t("asCampsH"))}</p>
   ${rows.length?rows.map(line).join(""):`<p class="hint">${esc(t("asNoneCamp"))}</p>`}
-  ${u.admin?`<button type="button" id="asNewCamp">${esc(t("asNewCamp"))}</button>`:""}</div>`;
+  ${u.admin?`<button type="button" id="asNewCamp">${esc(t("asNewCamp"))}</button><button type="button" class="sec" id="asPlacesBtn">📍 ${esc(t("asPlaces"))}</button>`:""}</div>`;
 }
 function asCampForm(u){
   return `<div class="box" id="asCampForm"><h2>${esc(t("asNewCamp"))}</h2>
@@ -1019,12 +1100,16 @@ function asSaveItem(u){
   const isMv=AS_MV.indexOf(f.type)>=0;
   if(isMv&&!serial){asErr(t("asNeedSerial"));return}
   if(serial&&all("a").some(x=>x.id!==(cur&&cur.id)&&String(x.serial||"").toLowerCase()===serial.toLowerCase())){asErr(t("asIdUsed"));return}
+  if(asPlaceNewBad("asPlace")){asErr(t("asNeedPlace"));return}
+  if(cur&&asPendFor(cur.id).length){asErr(t("asHasPend"));return}
+  if(!cur&&isMv&&serial&&asItem(asFixedId(serial))){asErr(t("asIdUsed"));return}
+  const pl=asReadPlace("asPlace",f.campId,u);if(!pl){asErr(t("asNeedPlace"));return}
   let ph=AS.pendingPhoto?phKeep(AS.pendingPhoto,String(f.name).slice(0,80)):null;
   if(ph)AS.thumbs[ph]=AS.pendingPhoto;
   if(cur){
     if(!ph)ph=cur.ph||"";
     if(asPendFor(cur.id).length){asErr(t("asHasPend"));return}
-    const data=Object.assign({},cur,{id:cur.id,type:f.type,pic:f.pic,name:f.name,serial:serial,campId:f.campId,campName:f.campName,holder:f.holder,cond:f.cond,...asPickExtra(f),ph:ph||"",by:cur.by,at:cur.at,updBy:u.name,updAt:new Date().toISOString(),example:asEx({name:f.name})||asEx(cur)?1:0,idFixed:cur.idFixed||(serial?1:0)});
+    const data=Object.assign({},cur,{id:cur.id,type:f.type,pic:f.pic,name:f.name,serial:serial,campId:f.campId,campName:f.campName,placeId:pl.placeId,placeName:pl.placeName,holder:f.holder,cond:f.cond,...asPickExtra(f),ph:ph||"",by:cur.by,at:cur.at,updBy:u.name,updAt:new Date().toISOString(),example:asEx({name:f.name})||asEx(cur)?1:0,idFixed:cur.idFixed||(serial?1:0)});
     if(u.admin){if(put("a",cur.id,data)===false)return}
     else{
       const rid="r"+Date.now();
@@ -1033,7 +1118,7 @@ function asSaveItem(u){
   }else{
     const id=isMv&&serial?asFixedId(serial):("a"+Date.now()),at=new Date().toISOString();
     if(isMv&&serial&&asItem(id)){asErr(t("asIdUsed"));return}
-    const data={id:id,type:f.type,pic:f.pic,name:f.name,serial:serial,campId:f.campId,campName:f.campName,holder:f.holder,cond:f.cond,...asPickExtra(f),ph:ph||"",by:u.name,at:at,example:asEx({name:f.name})?1:0,idFixed:serial?1:0};
+    const data={id:id,type:f.type,pic:f.pic,name:f.name,serial:serial,campId:f.campId,campName:f.campName,placeId:pl.placeId,placeName:pl.placeName,holder:f.holder,cond:f.cond,...asPickExtra(f),ph:ph||"",by:u.name,at:at,example:asEx({name:f.name})?1:0,idFixed:serial?1:0};
     const pf=AS.prefill;if(pf&&pf.grvId){data.grvId=pf.grvId;if(pf.photoUrl)data.photoUrl=pf.photoUrl}
     if(u.admin){if(put("a",id,data)===false)return}
     else{
@@ -1050,8 +1135,10 @@ function asSaveMove(u){
   const toId=($("asTo")||{}).value||"",to=asCamp(toId),holder=(($("asHolder")||{}).value||"").trim(),note=(($("asNote")||{}).value||"").trim();
   if(!toId||!to){asErr(t("asNeedTo"));return}
   if(toId===a.campId){asErr(t("asNeedDiff"));return}
+  if(asPlaceNewBad("asToPl")){asErr(t("asNeedPlace"));return}
+  const pl=asReadPlace("asToPl",toId,u);if(!pl){asErr(t("asNeedPlace"));return}
   const at=new Date().toISOString();
-  const body={assetId:a.id,name:a.name,fromCampId:a.campId,fromName:a.campName||asCampName(a.campId),toCampId:toId,toName:to.name,holder:holder,note:note,by:u.name,at:at,example:asEx(a)||asEx({name:note})?1:0};
+  const body={assetId:a.id,name:a.name,fromCampId:a.campId,fromName:a.campName||(asCamp(a.campId)||{}).name||"",fromPlaceId:a.placeId||"",fromPlaceName:asPlaceVal(a),toCampId:toId,toName:to.name,toPlaceId:pl.placeId,toPlaceName:pl.placeName,holder:holder,note:note,by:u.name,at:at,example:asEx(a)||asEx({name:note})?1:0};
   if(u.admin){
     if(asApplyMove(a,body)===false)return;
   }else{
@@ -1063,18 +1150,18 @@ function asSaveMove(u){
 function asApplyMove(a,body){
   const mid="m"+Date.now();
   if(put("m",mid,{id:mid,...body})===false)return false;
-  const next=Object.assign({},a,{campId:body.toCampId,campName:body.toName,holder:body.holder!=null&&body.holder!==""?body.holder:a.holder,updBy:body.by,updAt:body.at});
+  const next=Object.assign({},a,{campId:body.toCampId,campName:body.toName,placeId:body.toPlaceId||"",placeName:body.toPlaceName||"",holder:body.holder!=null&&body.holder!==""?body.holder:a.holder,updBy:body.by,updAt:body.at});
   if(put("a",a.id,next)===false)return false;
   return true;
 }
 function asApprove(id,u){
   const r=all("r").find(x=>x.id===id);if(!r||r.status!=="pending")return false;
   if(r.typ==="add"){
-    const data={id:r.assetId||("a"+Date.now()),type:r.type,pic:r.pic||"",name:r.name,serial:r.serial,campId:r.campId,campName:r.campName,holder:r.holder,cond:r.cond,...asPickExtra(r),...(r.photoUrl?{photoUrl:r.photoUrl}:{}),...(r.grvId?{grvId:r.grvId}:{}),ph:r.ph||"",by:r.by,at:r.at,example:r.example?1:0,okBy:u.name,okAt:new Date().toISOString()};
+    const data={id:r.assetId||("a"+Date.now()),type:r.type,pic:r.pic||"",name:r.name,serial:r.serial,campId:r.campId,campName:r.campName,placeId:r.placeId||"",placeName:r.placeName||"",holder:r.holder,cond:r.cond,...asPickExtra(r),...(r.photoUrl?{photoUrl:r.photoUrl}:{}),...(r.grvId?{grvId:r.grvId}:{}),ph:r.ph||"",by:r.by,at:r.at,example:r.example?1:0,okBy:u.name,okAt:new Date().toISOString()};
     if(put("a",data.id,data)===false)return false;
   }else if(r.typ==="edit"){
     const cur=asItem(r.assetId);if(!cur)return false;
-    const data=Object.assign({},cur,{type:r.type,pic:r.pic||"",name:r.name,serial:cur.serial||r.serial,campId:r.campId,campName:r.campName,holder:r.holder,cond:r.cond,...asPickExtra(r),ph:r.ph||cur.ph||"",updBy:r.by,updAt:r.at,okBy:u.name,okAt:new Date().toISOString(),idFixed:cur.idFixed||((cur.serial||r.serial)?1:0)});
+    const data=Object.assign({},cur,{type:r.type,pic:r.pic||"",name:r.name,serial:cur.serial||r.serial,campId:r.campId,campName:r.campName,placeId:r.placeId||"",placeName:r.placeName||"",holder:r.holder,cond:r.cond,...asPickExtra(r),ph:r.ph||cur.ph||"",updBy:r.by,updAt:r.at,okBy:u.name,okAt:new Date().toISOString(),idFixed:cur.idFixed||((cur.serial||r.serial)?1:0)});
     if(put("a",cur.id,data)===false)return false;
   }else if(r.typ==="move"){
     const cur=asItem(r.assetId);if(!cur)return false;
@@ -1097,7 +1184,7 @@ function asSaveCamp(u){
   draftClear("asCampName");afterSave(true);
 }
 function bindWork(u){
-  asNav();asEnsureCamps();asEnsureMachines();
+  asNav();asEnsureCamps();asEnsureMachines();asEnsurePlaces();
   const on=(id,f)=>{const e=$(id);if(e)e.onclick=f};
   on("asNew",()=>{AS.prefill=null;AS._type="vehicle";AS._pic="car";AS._cond="good";AS.pendingPhoto=null;asGo("form",{edit:0,id:null})});
   on("asGrvBtn",()=>asGo("grv"));
@@ -1109,6 +1196,8 @@ function bindWork(u){
   on("asApprBtn",()=>asGo("approvals"));
   on("asCampsBtn",()=>asGo("camps"));
   on("asNewCamp",()=>asGo("campform"));
+  on("asPlacesBtn",()=>asGo("places",{plOpen:null}));
+  asBindPlace("asCamp","asPlace");asBindPlace("asTo","asToPl");if(AS.screen==="places"&&u.admin)asBindPlaces(u);
   on("asChange",()=>{const a=asItem(AS.id);AS._type=(a&&a.type)||"vehicle";AS._pic=asPicKey(a);AS._cond=(a&&a.cond)||"good";AS.pendingPhoto=null;asGo("form",{edit:1})});
   on("asMoveBtn",()=>asGo("move"));
   const ft=$("asFltType");if(ft)ft.onchange=()=>{AS.fltType=ft.value;render()};
@@ -1137,7 +1226,7 @@ function asNav(){
   if(asNav.done||!window.TMC.nav)return;asNav.done=1;const N=window.TMC.nav;
   N.keys.push(o=>{if(o.t==="work"){o.sc=AS.screen;o.ai=AS.id||"";o.ed=AS.edit?1:0}return o});
   N.sets.push(o=>{if(o.sc){AS.screen=o.sc;AS.id=o.ai||null;AS.edit=o.ed?1:0;AS.pendingPhoto=null}});
-  N.ups.push(()=>{if(tab!=="work")return false;let to=null;if(AS.screen==="move"||(AS.screen==="form"&&AS.edit))to="detail";else if(AS.screen==="form"&&AS.prefill&&AS.prefill.grvId){to="grv";AS.prefill=null}else if(AS.screen==="campform")to="camps";else if(AS.screen==="detail"||AS.screen==="form"||AS.screen==="approvals"||AS.screen==="camps"||AS.screen==="grv")to="list";else return false;AS.screen=to;AS.pendingPhoto=null;if(to==="list"){AS.id=null;AS.edit=0}N.st=N.st.filter(k=>{try{const o=JSON.parse(k);return !(o.t==="work"&&o.sc&&o.sc!=="list")}catch(e){return true}});return true});
+  N.ups.push(()=>{if(tab!=="work")return false;let to=null;if(AS.screen==="move"||(AS.screen==="form"&&AS.edit))to="detail";else if(AS.screen==="form"&&AS.prefill&&AS.prefill.grvId){to="grv";AS.prefill=null}else if(AS.screen==="campform"||AS.screen==="places")to="camps";else if(AS.screen==="detail"||AS.screen==="form"||AS.screen==="approvals"||AS.screen==="camps"||AS.screen==="grv")to="list";else return false;AS.screen=to;AS.pendingPhoto=null;if(to==="list"){AS.id=null;AS.edit=0}N.st=N.st.filter(k=>{try{const o=JSON.parse(k);return !(o.t==="work"&&o.sc&&o.sc!=="list")}catch(e){return true}});return true});
   N.dirty.push(()=>tab==="work"&&AS.screen==="form"&&!!AS.pendingPhoto);
   N.clear.push(()=>{AS.pendingPhoto=null});
 }
@@ -1154,7 +1243,8 @@ bindMain=function(u){
   _asBind(u);
   const e=$("asHomeAp");if(e)e.onclick=()=>{tab="work";asGo("approvals")};
 };
-window.TMC.as=()=>AS;window.TMC.asPending=asPending;window.TMC.asApprove=asApprove;window.TMC.asReject=asReject;window.TMC.asItem=asItem;window.TMC.asCamps=asCampRows;window.TMC.asWhen=asWhen;window.TMC.AS_TZ=AS_TZ;window.TMC.AS_MASTER=AS_MASTER;window.TMC.AS_MV=AS_MV;window.TMC.asFixedId=asFixedId;window.TMC.asFuelId=asFuelId;window.TMC.asNormCamp=asNormCamp;window.TMC.asEnsureMachines=asEnsureMachines;window.TMC.asSetImplement=asSetImplement;window.TMC.asImpVal=asImpVal;window.TMC.asImpLab=asImpLab;window.TMC.asImpLine=asImpLine;window.TMC.staffImplementOk=staffImplementOk;
+window.TMC.as=()=>AS;window.TMC.asPending=asPending;window.TMC.asApprove=asApprove;window.TMC.asReject=asReject;window.TMC.asItem=asItem;window.TMC.asCamps=asCampRows;window.TMC.asCampName=asCampName;window.TMC.AS_CAMP_DN=AS_CAMP_DN;window.TMC.asWhen=asWhen;window.TMC.AS_TZ=AS_TZ;window.TMC.AS_MASTER=AS_MASTER;window.TMC.AS_MV=AS_MV;window.TMC.asFixedId=asFixedId;window.TMC.asFuelId=asFuelId;window.TMC.asNormCamp=asNormCamp;window.TMC.asEnsureMachines=asEnsureMachines;window.TMC.asSetImplement=asSetImplement;window.TMC.asImpVal=asImpVal;window.TMC.asImpLab=asImpLab;window.TMC.asImpLine=asImpLine;window.TMC.staffImplementOk=staffImplementOk;
+Object.assign(window.TMC,{asPlacesOf:asPlacesOf,asPlace:asPlace,asPlaceVal:asPlaceVal,asWhere:asWhere,asEnsurePlace:asEnsurePlace,asEnsurePlaces:asEnsurePlaces,asPlRename:asPlRename,asPlHide:asPlHide,asPlMerge:asPlMerge,asPlClean:asPlClean,verLabel:verLabel,AS_PL_SEED:AS_PL_SEED});
 /* ==================== APP FEATURES END ==================== */
 
 function canHTML(u){
@@ -1218,7 +1308,7 @@ function settingsHTML(u){
   ${u.admin?`<label class="hint">${esc(t("syncUrl"))}</label><div class="pw"><input id="sUrl" class="msk" type="text" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" name="${C.APP_ID}-su" value="${esc(sUrl())}"><button type="button" class="eye" data-eye="sUrl">👁</button></div>
   <label class="hint">${esc(t("syncCode"))}</label><div class="pw"><input id="sCode" class="msk" type="text" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" name="${C.APP_ID}-sc" value="${esc(sCode())}"><button type="button" class="eye" data-eye="sCode">👁</button></div>
   <button type="button" class="sec" id="sSave">${esc(t("save"))}</button>`:""}</div>
-  <div class="box"><h3>ℹ️ ${esc(t("ver"))} ${C.VER}</h3><button type="button" class="sec" id="uChk">${esc(t("updChk"))}</button><p class="hint" id="uMsg"></p></div>
+  <div class="box"><h3>ℹ️ ${esc(t("ver"))} ${esc(verLabel())}</h3><button type="button" class="sec" id="uChk">${esc(t("updChk"))}</button><p class="hint" id="uMsg"></p></div>
   <div class="box"><button type="button" class="sec" id="hShare">📤 ${esc(t("share"))}</button>${insHTML()}<button type="button" class="sec loBand" id="sOut">${esc(t("logout"))}</button><button type="button" class="sec" id="sWipe">${esc(t("wipe"))}</button></div>`;
 }
 function bindMain(u){
