@@ -24,7 +24,7 @@
   "CACHE_PREFIX": "tmcassets",
   "NAME": "TMC Assets",
   "SHORT": "TMC Assets",
-  "VER": 8,
+  "VER": 9,
   "COLOR": "#0e7490",
   "COLOR_DARK": "#155e75",
   "REPORT_COLOR": "#1B7F3B",
@@ -56,6 +56,8 @@
 body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic","Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;background:var(--bg);color:#0f172a;font-size:17px;min-height:100vh;padding-bottom:80px}
 input,select,textarea,button{font:inherit;font-size:18px;min-height:58px;width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:10px;margin:6px 0;background:#fff;color:#0f172a}
 textarea{min-height:80px}
+/* VER 9 (Johan 11 Nov 2026): machine details + More details */
+#asMore{margin:10px 0;border:2px solid #cbd5e1;border-radius:10px;padding:4px 10px;background:#f8fafc}#asMore>summary{font-size:19px;font-weight:700;min-height:52px;display:flex;align-items:center;cursor:pointer}#asMach h3,#asMore h3{margin:12px 0 2px}.asKv{margin:4px 0}.asKv b{font-weight:600}
 button{background:var(--c);color:#fff;border:0;font-weight:600;cursor:pointer;touch-action:manipulation}
 button.sec{background:#e2e8f0;color:#0f172a}button.red{background:#b91c1c}button.sm{width:auto;padding:8px 14px;margin:4px}
 label{display:block;font-size:14px;color:#475569;margin:8px 0 4px}
@@ -643,12 +645,12 @@ Object.assign(window.TMC,{addReport:addReport,REPORTS:REPORTS,XL:XL,repXlsx:repX
    Staff changes are stored as r and do not change the item until Admin
    Approve. Admin Save applies at once. Successful Save calls TMC.afterSave(true).
    Times use 24-hour Africa/Ndjamena. SYNC_URL stays empty (Not connected yet). */
-Object.assign(T.en,{work:"Items",asTitle:"Items",asNew:"Add item",asNone:"No items yet. Tap Add item.",asNoneF:"No items match.",asAll:"All",asSearch:"Search name or serial",asCamp:"Where it is",asType:"Type",asName:"Name",asNameH:"Name of the item",asSerial:"Serial or number plate",asSerialH:"Serial or number plate",asHolder:"Who has it",asHolderH:"Name of the person",asCond:"Condition",asGood:"Good",asRepair:"Needs repair",asBroken:"Broken",asNeedName:"Type the name.",asNeedCamp:"Pick a camp.",asNeedType:"Pick a type.",asSave:"Save item",asChange:"Change item",asMove:"Move item",asMoveTo:"Move to",asMoveNote:"Note",asMoveNoteH:"Why it moved (optional)",asNeedTo:"Pick the camp it is going to.",asNeedDiff:"Pick a different camp.",asSaveMove:"Save move",asWait:"Waiting for Admin",asWaitH:"Saved. Waiting for Admin. The item is not changed yet.",asHasPend:"Already waiting for Admin.",asAppr:"Approvals",asApprH:"Staff changes wait here. Approve or Reject. Until then the item stays as it is.",asNoneAp:"Nothing waiting.",asApprove:"✅ Approve",asReject:"❌ Reject",asCamps:"Camps",asCampsH:"Admin only. Staff pick from this list.",asCampName:"Camp name",asCampNameH:"Camp or site name",asNeedCampN:"Type the camp name.",asSaveCamp:"Save camp",asNewCamp:"Add camp",asNoneCamp:"No camps yet.",asEx:"EXAMPLE",asHq:"HQ",asExN:"Example camp North",asExS:"Example camp South",asHist:"Move history",asNoHist:"No moves yet.",asFrom:"From",asTo:"To",asWhen:"When",asBy:"By",asPhoto:"Photo",asPhotoH:"Take a photo or choose one from the phone.",asDetail:"Item",asPendAdd:"New item (not on the list yet)",asNo:"—",asTyVehicle:"Vehicle",asTyTent:"Tent",asTyStarlink:"Starlink",asTyTable:"Table",asTyBed:"Bed",asTyContainer:"Container",asTyOther:"Other",asTyCrane:"Crane",asTyTelehandler:"Telehandler",asTySkidsteer:"Skid steer",asTyTlb:"TLB",asTyExcavator:"Excavator",asTyPecker:"Pecker",asTyFlowbin:"Flowbin",asTyGenerator:"Generator",asTyBowser:"Bowser",asNeedSerial:"Type the serial or number plate. This is the fixed ID and cannot change later.",asIdFixed:"This ID never changes.",asIdUsed:"That ID is already on the list."});
-Object.assign(T.fr,{work:"Articles",asTitle:"Articles",asNew:"Ajouter un article",asNone:"Pas encore d'article. Touchez Ajouter un article.",asNoneF:"Aucun article ne correspond.",asAll:"Tous",asSearch:"Chercher nom ou série",asCamp:"Où il est",asType:"Type",asName:"Nom",asNameH:"Nom de l'article",asSerial:"Série ou plaque",asSerialH:"Série ou plaque",asHolder:"Qui l'a",asHolderH:"Nom de la personne",asCond:"État",asGood:"Bon",asRepair:"À réparer",asBroken:"Cassé",asNeedName:"Écrivez le nom.",asNeedCamp:"Choisissez un camp.",asNeedType:"Choisissez un type.",asSave:"Enregistrer l'article",asChange:"Modifier l'article",asMove:"Déplacer l'article",asMoveTo:"Déplacer vers",asMoveNote:"Note",asMoveNoteH:"Pourquoi il a bougé (facultatif)",asNeedTo:"Choisissez le camp de destination.",asNeedDiff:"Choisissez un autre camp.",asSaveMove:"Enregistrer le déplacement",asWait:"En attente de l'Admin",asWaitH:"Enregistré. En attente de l'Admin. L'article n'est pas encore changé.",asHasPend:"Déjà en attente de l'Admin.",asAppr:"Approbations",asApprH:"Les changements du personnel attendent ici. Approuver ou Refuser. Jusque-là l'article reste comme il est.",asNoneAp:"Rien en attente.",asApprove:"✅ Approuver",asReject:"❌ Refuser",asCamps:"Camps",asCampsH:"Admin seulement. Le personnel choisit dans cette liste.",asCampName:"Nom du camp",asCampNameH:"Nom du camp ou du site",asNeedCampN:"Écrivez le nom du camp.",asSaveCamp:"Enregistrer le camp",asNewCamp:"Ajouter un camp",asNoneCamp:"Pas encore de camp.",asEx:"EXEMPLE",asHq:"HQ",asExN:"Camp exemple Nord",asExS:"Camp exemple Sud",asHist:"Historique des déplacements",asNoHist:"Pas encore de déplacement.",asFrom:"De",asTo:"Vers",asWhen:"Quand",asBy:"Par",asPhoto:"Photo",asPhotoH:"Prenez une photo ou choisissez-en une sur le téléphone.",asDetail:"Article",asPendAdd:"Nouvel article (pas encore sur la liste)",asNo:"—",asTyVehicle:"Véhicule",asTyTent:"Tente",asTyStarlink:"Starlink",asTyTable:"Table",asTyBed:"Lit",asTyContainer:"Conteneur",asTyOther:"Autre",asTyCrane:"Grue",asTyTelehandler:"Chariot télescopique",asTySkidsteer:"Mini-chargeuse",asTyTlb:"Tractopelle",asTyExcavator:"Pelle",asTyPecker:"Brise-roche",asTyFlowbin:"Flowbin",asTyGenerator:"Groupe électrogène",asTyBowser:"Bowser",asNeedSerial:"Écrivez le n° de série ou la plaque. C'est l'identifiant fixe, il ne changera plus.",asIdFixed:"Cet identifiant ne change jamais.",asIdUsed:"Cet identifiant est déjà sur la liste."});
-Object.assign(T.af,{work:"Items",asTitle:"Items",asNew:"Voeg item by",asNone:"Nog geen items nie. Tik Voeg item by.",asNoneF:"Geen items pas nie.",asAll:"Alles",asSearch:"Soek naam of reeksnommer",asCamp:"Waar dit is",asType:"Tipe",asName:"Naam",asNameH:"Naam van die item",asSerial:"Reeksnommer of nommerplaat",asSerialH:"Reeksnommer of nommerplaat",asHolder:"Wie dit het",asHolderH:"Naam van die persoon",asCond:"Toestand",asGood:"Goed",asRepair:"Moet herstel word",asBroken:"Stuk",asNeedName:"Tik die naam.",asNeedCamp:"Kies 'n kamp.",asNeedType:"Kies 'n tipe.",asSave:"Stoor item",asChange:"Verander item",asMove:"Skuif item",asMoveTo:"Skuif na",asMoveNote:"Nota",asMoveNoteH:"Hoekom dit geskuif het (opsioneel)",asNeedTo:"Kies die kamp waarheen dit gaan.",asNeedDiff:"Kies 'n ander kamp.",asSaveMove:"Stoor skuif",asWait:"Wag vir Admin",asWaitH:"Gestoor. Wag vir Admin. Die item is nog nie verander nie.",asHasPend:"Wag al vir Admin.",asAppr:"Goedkeurings",asApprH:"Personeel se veranderinge wag hier. Keur goed of Keer af. Tot dan bly die item soos dit is.",asNoneAp:"Niks wat wag nie.",asApprove:"✅ Keur goed",asReject:"❌ Keer af",asCamps:"Kampe",asCampsH:"Net Admin. Personeel kies uit hierdie lys.",asCampName:"Kampnaam",asCampNameH:"Kamp- of terreinnaam",asNeedCampN:"Tik die kampnaam.",asSaveCamp:"Stoor kamp",asNewCamp:"Voeg kamp by",asNoneCamp:"Nog geen kampe nie.",asEx:"VOORBEELD",asHq:"HQ",asExN:"Voorbeeldkamp Noord",asExS:"Voorbeeldkamp Suid",asHist:"Skuifgeskiedenis",asNoHist:"Nog geen skuwe nie.",asFrom:"Van",asTo:"Na",asWhen:"Wanneer",asBy:"Deur",asPhoto:"Foto",asPhotoH:"Neem 'n foto of kies een op die foon.",asDetail:"Item",asPendAdd:"Nuwe item (nog nie op die lys nie)",asNo:"—",asTyVehicle:"Voertuig",asTyTent:"Tent",asTyStarlink:"Starlink",asTyTable:"Tafel",asTyBed:"Bed",asTyContainer:"Houer",asTyOther:"Ander",asTyCrane:"Kraan",asTyTelehandler:"Teleskoopmasjien",asTySkidsteer:"Glystuur",asTyTlb:"TLB",asTyExcavator:"Graafmasjien",asTyPecker:"Pecker",asTyFlowbin:"Flowbin",asTyGenerator:"Kragopwekker",asTyBowser:"Bowser",asNeedSerial:"Tik die reeksnommer of nommerplaat. Dit is die vaste ID en kan later nie verander nie.",asIdFixed:"Hierdie ID verander nooit.",asIdUsed:"Daardie ID is al op die lys."});
+Object.assign(T.en,{work:"Items",asTitle:"Items",asNew:"Add item",asNone:"No items yet. Tap Add item.",asNoneF:"No items match.",asAll:"All",asSearch:"Search name or serial",asCamp:"Where it is",asType:"Type",asName:"Name",asNameH:"Name of the item",asSerial:"Fleet number (KA)",asSerialH:"e.g. KA00507",asHolder:"Who has it",asHolderH:"Name of the person",asCond:"Condition",asGood:"Good",asRepair:"Needs repair",asBroken:"Broken",asNeedName:"Type the name.",asNeedCamp:"Pick a camp.",asNeedType:"Pick a type.",asSave:"Save item",asChange:"Change item",asMove:"Move item",asMoveTo:"Move to",asMoveNote:"Note",asMoveNoteH:"Why it moved (optional)",asNeedTo:"Pick the camp it is going to.",asNeedDiff:"Pick a different camp.",asSaveMove:"Save move",asWait:"Waiting for Admin",asWaitH:"Saved. Waiting for Admin. The item is not changed yet.",asHasPend:"Already waiting for Admin.",asAppr:"Approvals",asApprH:"Staff changes wait here. Approve or Reject. Until then the item stays as it is.",asNoneAp:"Nothing waiting.",asApprove:"✅ Approve",asReject:"❌ Reject",asCamps:"Camps",asCampsH:"Admin only. Staff pick from this list.",asCampName:"Camp name",asCampNameH:"Camp or site name",asNeedCampN:"Type the camp name.",asSaveCamp:"Save camp",asNewCamp:"Add camp",asNoneCamp:"No camps yet.",asEx:"EXAMPLE",asHq:"HQ",asExN:"Example camp North",asExS:"Example camp South",asHist:"Move history",asNoHist:"No moves yet.",asFrom:"From",asTo:"To",asWhen:"When",asBy:"By",asPhoto:"Photo",asPhotoH:"Take a photo or choose one from the phone.",asDetail:"Item",asPendAdd:"New item (not on the list yet)",asNo:"—",asTyVehicle:"Vehicle",asTyTent:"Tent",asTyStarlink:"Starlink",asTyTable:"Table",asTyBed:"Bed",asTyContainer:"Container",asTyOther:"Other",asTyCrane:"Crane",asTyTelehandler:"Telehandler",asTySkidsteer:"Skid steer",asTyTlb:"TLB",asTyExcavator:"Excavator",asTyPecker:"Pecker",asTyFlowbin:"Flowbin",asTyGenerator:"Generator",asTyBowser:"Bowser",asNeedSerial:"Type the serial or number plate. This is the fixed ID and cannot change later.",asIdFixed:"This ID never changes.",asIdUsed:"That ID is already on the list."});
+Object.assign(T.fr,{work:"Articles",asTitle:"Articles",asNew:"Ajouter un article",asNone:"Pas encore d'article. Touchez Ajouter un article.",asNoneF:"Aucun article ne correspond.",asAll:"Tous",asSearch:"Chercher nom ou série",asCamp:"Où il est",asType:"Type",asName:"Nom",asNameH:"Nom de l'article",asSerial:"Numéro de parc (KA)",asSerialH:"ex. KA00507",asHolder:"Qui l'a",asHolderH:"Nom de la personne",asCond:"État",asGood:"Bon",asRepair:"À réparer",asBroken:"Cassé",asNeedName:"Écrivez le nom.",asNeedCamp:"Choisissez un camp.",asNeedType:"Choisissez un type.",asSave:"Enregistrer l'article",asChange:"Modifier l'article",asMove:"Déplacer l'article",asMoveTo:"Déplacer vers",asMoveNote:"Note",asMoveNoteH:"Pourquoi il a bougé (facultatif)",asNeedTo:"Choisissez le camp de destination.",asNeedDiff:"Choisissez un autre camp.",asSaveMove:"Enregistrer le déplacement",asWait:"En attente de l'Admin",asWaitH:"Enregistré. En attente de l'Admin. L'article n'est pas encore changé.",asHasPend:"Déjà en attente de l'Admin.",asAppr:"Approbations",asApprH:"Les changements du personnel attendent ici. Approuver ou Refuser. Jusque-là l'article reste comme il est.",asNoneAp:"Rien en attente.",asApprove:"✅ Approuver",asReject:"❌ Refuser",asCamps:"Camps",asCampsH:"Admin seulement. Le personnel choisit dans cette liste.",asCampName:"Nom du camp",asCampNameH:"Nom du camp ou du site",asNeedCampN:"Écrivez le nom du camp.",asSaveCamp:"Enregistrer le camp",asNewCamp:"Ajouter un camp",asNoneCamp:"Pas encore de camp.",asEx:"EXEMPLE",asHq:"HQ",asExN:"Camp exemple Nord",asExS:"Camp exemple Sud",asHist:"Historique des déplacements",asNoHist:"Pas encore de déplacement.",asFrom:"De",asTo:"Vers",asWhen:"Quand",asBy:"Par",asPhoto:"Photo",asPhotoH:"Prenez une photo ou choisissez-en une sur le téléphone.",asDetail:"Article",asPendAdd:"Nouvel article (pas encore sur la liste)",asNo:"—",asTyVehicle:"Véhicule",asTyTent:"Tente",asTyStarlink:"Starlink",asTyTable:"Table",asTyBed:"Lit",asTyContainer:"Conteneur",asTyOther:"Autre",asTyCrane:"Grue",asTyTelehandler:"Chariot télescopique",asTySkidsteer:"Mini-chargeuse",asTyTlb:"Tractopelle",asTyExcavator:"Pelle",asTyPecker:"Brise-roche",asTyFlowbin:"Flowbin",asTyGenerator:"Groupe électrogène",asTyBowser:"Bowser",asNeedSerial:"Écrivez le n° de série ou la plaque. C'est l'identifiant fixe, il ne changera plus.",asIdFixed:"Cet identifiant ne change jamais.",asIdUsed:"Cet identifiant est déjà sur la liste."});
+Object.assign(T.af,{work:"Items",asTitle:"Items",asNew:"Voeg item by",asNone:"Nog geen items nie. Tik Voeg item by.",asNoneF:"Geen items pas nie.",asAll:"Alles",asSearch:"Soek naam of reeksnommer",asCamp:"Waar dit is",asType:"Tipe",asName:"Naam",asNameH:"Naam van die item",asSerial:"Vlootnommer (KA)",asSerialH:"bv. KA00507",asHolder:"Wie dit het",asHolderH:"Naam van die persoon",asCond:"Toestand",asGood:"Goed",asRepair:"Moet herstel word",asBroken:"Stuk",asNeedName:"Tik die naam.",asNeedCamp:"Kies 'n kamp.",asNeedType:"Kies 'n tipe.",asSave:"Stoor item",asChange:"Verander item",asMove:"Skuif item",asMoveTo:"Skuif na",asMoveNote:"Nota",asMoveNoteH:"Hoekom dit geskuif het (opsioneel)",asNeedTo:"Kies die kamp waarheen dit gaan.",asNeedDiff:"Kies 'n ander kamp.",asSaveMove:"Stoor skuif",asWait:"Wag vir Admin",asWaitH:"Gestoor. Wag vir Admin. Die item is nog nie verander nie.",asHasPend:"Wag al vir Admin.",asAppr:"Goedkeurings",asApprH:"Personeel se veranderinge wag hier. Keur goed of Keer af. Tot dan bly die item soos dit is.",asNoneAp:"Niks wat wag nie.",asApprove:"✅ Keur goed",asReject:"❌ Keer af",asCamps:"Kampe",asCampsH:"Net Admin. Personeel kies uit hierdie lys.",asCampName:"Kampnaam",asCampNameH:"Kamp- of terreinnaam",asNeedCampN:"Tik die kampnaam.",asSaveCamp:"Stoor kamp",asNewCamp:"Voeg kamp by",asNoneCamp:"Nog geen kampe nie.",asEx:"VOORBEELD",asHq:"HQ",asExN:"Voorbeeldkamp Noord",asExS:"Voorbeeldkamp Suid",asHist:"Skuifgeskiedenis",asNoHist:"Nog geen skuwe nie.",asFrom:"Van",asTo:"Na",asWhen:"Wanneer",asBy:"Deur",asPhoto:"Foto",asPhotoH:"Neem 'n foto of kies een op die foon.",asDetail:"Item",asPendAdd:"Nuwe item (nog nie op die lys nie)",asNo:"—",asTyVehicle:"Voertuig",asTyTent:"Tent",asTyStarlink:"Starlink",asTyTable:"Tafel",asTyBed:"Bed",asTyContainer:"Houer",asTyOther:"Ander",asTyCrane:"Kraan",asTyTelehandler:"Teleskoopmasjien",asTySkidsteer:"Glystuur",asTyTlb:"TLB",asTyExcavator:"Graafmasjien",asTyPecker:"Pecker",asTyFlowbin:"Flowbin",asTyGenerator:"Kragopwekker",asTyBowser:"Bowser",asNeedSerial:"Tik die reeksnommer of nommerplaat. Dit is die vaste ID en kan later nie verander nie.",asIdFixed:"Hierdie ID verander nooit.",asIdUsed:"Daardie ID is al op die lys."});
 Object.assign(T.ar,{work:"العناصر",asTitle:"العناصر",asNew:"إضافة عنصر",asNone:"لا توجد عناصر بعد. اضغط إضافة عنصر.",asNoneF:"لا يوجد عنصر مطابق.",
 asAll:"الكل",asSearch:"ابحث بالاسم أو الرقم",asCamp:"مكانه",asType:"النوع",asName:"الاسم",asNameH:"اسم العنصر",
-asSerial:"الرقم التسلسلي أو رقم اللوحة",asSerialH:"الرقم التسلسلي أو رقم اللوحة",asHolder:"من معه",asHolderH:"اسم الشخص",asCond:"الحالة",asGood:"جيد",
+asSerial:"رقم الأسطول (KA)",asSerialH:"مثلاً KA00507",asHolder:"من معه",asHolderH:"اسم الشخص",asCond:"الحالة",asGood:"جيد",
 asRepair:"يحتاج إلى إصلاح",asBroken:"معطوب",asNeedName:"اكتب الاسم.",asNeedCamp:"اختر المخيم.",asNeedType:"اختر النوع.",asSave:"حفظ العنصر",
 asChange:"تعديل العنصر",asMove:"نقل العنصر",asMoveTo:"نقل إلى",asMoveNote:"ملاحظة",asMoveNoteH:"سبب النقل (اختياري)",asNeedTo:"اختر المخيم الذي سيذهب إليه.",
 asNeedDiff:"اختر مخيمًا آخر.",asSaveMove:"حفظ النقل",asWait:"بانتظار المسؤول",asWaitH:"تم الحفظ. بانتظار المسؤول. العنصر لم يُغيَّر بعد.",
@@ -665,6 +667,79 @@ asIdUsed:"هذا المعرّف موجود على القائمة بالفعل."}
 const AS={screen:"list",fltType:"all",fltCamp:"all",q:"",id:null,edit:0,pendingPhoto:null,thumbs:{},err:""};
 const AS_TZ="Africa/Ndjamena";
 const AS_TYPES=["vehicle","excavator","pecker","crane","telehandler","skidsteer","tlb","flowbin","generator","bowser","tent","starlink","table","bed","container","other"];
+
+/* VER 9 (Johan 11 Nov 2026): machine/vehicle details + More details, all optional, blank by default */
+Object.assign(T.en,{"asVin": "VIN / chassis number", "asIdFromVin": "Fleet number is filled in from the last 7 characters of the VIN.", "asVinMis": "Warning: the VIN ends in {v}, but the fleet number is {id}. The fleet number stays the same.", "asIdDup": "Warning: fleet number {id} is already used by {name}."});
+Object.assign(T.en,{"asMachH": "Machine details", "asReg": "Registration or fleet number", "asMake": "Make", "asModel": "Model", "asYear": "Year", "asChassis": "Chassis number", "asEngine": "Engine number", "asDriver": "Driver or operator", "asMeter": "Hours or km reading", "asHrs": "hours", "asKm": "km", "asNextSvc": "Next service date", "asLicExp": "Licence expiry date", "asStat": "Status", "asStActive": "Active", "asStRepair": "In repair", "asStSold": "Sold or disposed", "asMore": "More details", "asTag": "Asset tag or number", "asSerial2": "Other serial numbers", "asBuyDate": "Purchase date", "asCost": "Purchase cost", "asSupplier": "Supplier", "asInsCo": "Insurance company", "asInsNo": "Insurance policy number", "asInsExp": "Insurance expiry date", "asWarExp": "Warranty expiry date", "asNotes": "Notes", "asPick": "Choose"});
+Object.assign(T.fr,{"asVin": "VIN / numéro de châssis", "asIdFromVin": "Le numéro de parc vient des 7 derniers caractères du VIN.", "asVinMis": "Attention : le VIN finit par {v}, mais le numéro de parc est {id}. Le numéro de parc ne change pas.", "asIdDup": "Attention : le numéro de parc {id} est déjà utilisé par {name}."});
+Object.assign(T.fr,{"asMachH": "Détails de la machine", "asReg": "Immatriculation ou numéro de parc", "asMake": "Marque", "asModel": "Modèle", "asYear": "Année", "asChassis": "Numéro de châssis", "asEngine": "Numéro de moteur", "asDriver": "Chauffeur ou opérateur", "asMeter": "Compteur heures ou km", "asHrs": "heures", "asKm": "km", "asNextSvc": "Date du prochain entretien", "asLicExp": "Date de fin de licence", "asStat": "Statut", "asStActive": "En service", "asStRepair": "En réparation", "asStSold": "Vendu ou sorti", "asMore": "Plus de détails", "asTag": "Étiquette ou numéro d'inventaire", "asSerial2": "Autres numéros de série", "asBuyDate": "Date d'achat", "asCost": "Prix d'achat", "asSupplier": "Fournisseur", "asInsCo": "Compagnie d'assurance", "asInsNo": "Numéro de police d'assurance", "asInsExp": "Date de fin d'assurance", "asWarExp": "Date de fin de garantie", "asNotes": "Notes", "asPick": "Choisir"});
+Object.assign(T.af,{"asVin": "VIN / onderstelnommer", "asIdFromVin": "Die vlootnommer kom uit die laaste 7 karakters van die VIN.", "asVinMis": "Waarskuwing: die VIN eindig op {v}, maar die vlootnommer is {id}. Die vlootnommer bly dieselfde.", "asIdDup": "Waarskuwing: vlootnommer {id} word reeds deur {name} gebruik."});
+Object.assign(T.af,{"asMachH": "Masjien se besonderhede", "asReg": "Registrasie- of vlootnommer", "asMake": "Fabrikaat", "asModel": "Model", "asYear": "Jaar", "asChassis": "Onderstelnommer", "asEngine": "Enjinnommer", "asDriver": "Bestuurder of operateur", "asMeter": "Ure- of km-lesing", "asHrs": "ure", "asKm": "km", "asNextSvc": "Volgende diensdatum", "asLicExp": "Lisensie vervaldatum", "asStat": "Status", "asStActive": "In gebruik", "asStRepair": "In herstel", "asStSold": "Verkoop of weggedoen", "asMore": "Meer besonderhede", "asTag": "Batekaartjie of nommer", "asSerial2": "Ander reeksnommers", "asBuyDate": "Aankoopdatum", "asCost": "Aankoopprys", "asSupplier": "Verskaffer", "asInsCo": "Versekeringsmaatskappy", "asInsNo": "Versekeringspolisnommer", "asInsExp": "Versekering vervaldatum", "asWarExp": "Waarborg vervaldatum", "asNotes": "Notas", "asPick": "Kies"});
+Object.assign(T.ar,{"asVin": "رقم VIN / رقم الشاسيه", "asIdFromVin": "رقم الأسطول يُؤخذ من آخر 7 رموز في رقم VIN.", "asVinMis": "تنبيه: رقم VIN ينتهي بـ {v} لكن رقم الأسطول {id}. رقم الأسطول لا يتغير.", "asIdDup": "تنبيه: رقم الأسطول {id} مستخدم من قبل {name}."});
+Object.assign(T.ar,{"asMachH": "تفاصيل الآلة", "asReg": "رقم التسجيل أو رقم الأسطول", "asMake": "الماركة", "asModel": "الموديل", "asYear": "سنة الصنع", "asChassis": "رقم الشاسيه", "asEngine": "رقم المحرك", "asDriver": "السائق أو المشغل", "asMeter": "قراءة الساعات أو الكيلومترات", "asHrs": "ساعات", "asKm": "كم", "asNextSvc": "تاريخ الصيانة القادمة", "asLicExp": "تاريخ انتهاء الرخصة", "asStat": "الوضع", "asStActive": "يعمل", "asStRepair": "في الإصلاح", "asStSold": "مباع أو مستبعد", "asMore": "تفاصيل أكثر", "asTag": "رقم الأصل", "asSerial2": "أرقام تسلسلية أخرى", "asBuyDate": "تاريخ الشراء", "asCost": "سعر الشراء", "asSupplier": "المورّد", "asInsCo": "شركة التأمين", "asInsNo": "رقم بوليصة التأمين", "asInsExp": "تاريخ انتهاء التأمين", "asWarExp": "تاريخ انتهاء الضمان", "asNotes": "ملاحظات", "asPick": "اختر"});
+/* VER 9 fields. g: m = machines/vehicles only (top), s = status (top, every item), x = More details (every item). Never pre-filled. */
+const AS_F=[["vin","vin","m"],["make","text","m"],["model","text","m"],["year","num","m"],["engine","text","m"],["driver","text","m"],["meter","meter","m"],["nextSvc","date","m"],["licExp","date","m"],
+ ["stat","sel","s",["active","repair","sold"]],
+ ["tag","text","x"],["serial2","text","x"],["buyDate","date","x"],["cost","num","x"],["supplier","text","x"],["insCo","text","x"],["insNo","text","x"],["insExp","date","x"],["warExp","date","x"],["notes","area","x"]];
+const AS_FK=AS_F.map(f=>f[0]).concat(["meterU"]);
+const AS_FL={vin:"asVin",make:"asMake",model:"asModel",year:"asYear",engine:"asEngine",driver:"asDriver",meter:"asMeter",nextSvc:"asNextSvc",licExp:"asLicExp",stat:"asStat",tag:"asTag",serial2:"asSerial2",buyDate:"asBuyDate",cost:"asCost",supplier:"asSupplier",insCo:"asInsCo",insNo:"asInsNo",insExp:"asInsExp",warExp:"asWarExp",notes:"asNotes"};
+const AS_STL={active:"asStActive",repair:"asStRepair",sold:"asStSold"};
+/* VER 9: From GRV waiting list (Admin only). GRV pushes entries to Assets' server; Assets never calls GRV. */
+Object.assign(T.en,{"asGrv": "From GRV", "asGrvH": "Goods that GRV says have arrived. Make an item for each one.", "asGrvMake": "Make item", "asGrvHide": "Done / Hide", "asGrvNone": "Nothing waiting from GRV.", "asGrvNo": "GRV number", "asGrvRecv": "Received", "asGrvQtyH": "Add one item for each unit.", "asGrvMade": "{n} of {q} made", "asGrvPhoto": "Photo from GRV", "asPo": "PO"});
+Object.assign(T.fr,{"asGrv": "Depuis GRV", "asGrvH": "Marchandises arrivées selon GRV. Créez un article pour chacune.", "asGrvMake": "Créer l'article", "asGrvHide": "Fini / Masquer", "asGrvNone": "Rien en attente de GRV.", "asGrvNo": "Numéro GRV", "asGrvRecv": "Reçu", "asGrvQtyH": "Ajoutez un article par unité.", "asGrvMade": "{n} sur {q} créés", "asGrvPhoto": "Photo de GRV", "asPo": "BC"});
+Object.assign(T.af,{"asGrv": "Van GRV", "asGrvH": "Goedere wat volgens GRV aangekom het. Maak 'n item vir elkeen.", "asGrvMake": "Maak item", "asGrvHide": "Klaar / Versteek", "asGrvNone": "Niks wag van GRV nie.", "asGrvNo": "GRV-nommer", "asGrvRecv": "Ontvang", "asGrvQtyH": "Voeg een item by vir elke eenheid.", "asGrvMade": "{n} van {q} gemaak", "asGrvPhoto": "Foto van GRV", "asPo": "BO"});
+Object.assign(T.ar,{"asGrv": "من GRV", "asGrvH": "بضائع وصلت حسب GRV. أنشئ عنصرًا لكل واحدة.", "asGrvMake": "أنشئ عنصرًا", "asGrvHide": "تم / إخفاء", "asGrvNone": "لا شيء ينتظر من GRV.", "asGrvNo": "رقم GRV", "asGrvRecv": "تاريخ الاستلام", "asGrvQtyH": "أضف عنصرًا واحدًا لكل وحدة.", "asGrvMade": "تم إنشاء {n} من {q}", "asGrvPhoto": "صورة من GRV", "asPo": "أمر الشراء"});
+function asGrvRows(){return all("g").filter(g=>g&&g.status!=="done"&&g.status!=="hidden").sort((a,b)=>String(b.received||"").localeCompare(String(a.received||"")))}
+function asGrvDay(v){const d=String(v||"").slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return String(v||"");return asFVal(["x","date"],{x:d})+(String(v).length>10?" "+String(v).slice(11,16):"")}
+function asGrvHTML(u){
+  const rows=asGrvRows();
+  const row=g=>{const q=Math.max(1,parseInt(g.qty,10)||1),made=+g.made||0;
+    return `<div class="box asGrvRow" id="asGrv_${esc(g.id)}" data-gid="${esc(g.id)}"><h3>${esc(g.name||"")}${q>1?` <span class="st pending">x${q}</span>`:""}</h3>
+    ${q>1?`<p class="hint">${esc(t("asGrvQtyH"))}${made?" · "+esc(t("asGrvMade").replace("{n}",made).replace("{q}",q)):""}</p>`:""}
+    <p class="hint asKv">${esc(t("asGrvNo"))}: <b>${esc(g.grvNo||"—")}</b></p>
+    <p class="hint asKv">${esc(t("asSupplier"))}: <b>${esc(g.supplier||"—")}</b></p>
+    <p class="hint asKv">${esc(t("asGrvRecv"))}: <b>${esc(asGrvDay(g.received)||"—")}</b></p>
+    <button type="button" class="asGrvMake" data-gid="${esc(g.id)}">${esc(t("asGrvMake"))}</button>
+    <button type="button" class="sec asGrvHide" data-gid="${esc(g.id)}">${esc(t("asGrvHide"))}</button></div>`};
+  return `<div id="asGrvList"><div class="box"><h2>📥 ${esc(t("asGrv"))}</h2><p class="hint">${esc(t("asGrvH"))}</p></div>${rows.length?rows.map(row).join(""):`<div class="box"><p class="hint" id="asGrvNone">${esc(t("asGrvNone"))}</p></div>`}</div>`;
+}
+function asGrvPrefill(g){const nt=[g.grvNo?"GRV "+g.grvNo:"",g.po?t("asPo")+" "+g.po:""].filter(Boolean).join(" · ");
+  return {name:g.name||"",supplier:g.supplier||"",buyDate:/^\d{4}-\d{2}-\d{2}/.test(String(g.received||""))?String(g.received).slice(0,10):"",notes:nt,photoUrl:/^https:\/\//.test(String(g.photoUrl||""))?String(g.photoUrl):"",grvId:g.id}}
+function asGrvMark(gid,u,how){const g=all("g").find(x=>x.id===gid);if(!g)return false;const q=Math.max(1,parseInt(g.qty,10)||1);
+  const nx=Object.assign({},g);if(how==="made"){nx.made=(+g.made||0)+1;if(nx.made>=q)nx.status="done"}else nx.status="hidden";
+  nx.doneBy=u.name;nx.doneAt=new Date().toISOString();return put("g",gid,nx)}
+function asVinNorm(v){return String(v||"").toUpperCase().replace(/\s+/g,"")}
+function asVin7(vin){vin=asVinNorm(vin);return vin.length>=7?vin.slice(-7):""}
+function asIdDupOf(id,exceptId){id=String(id||"").toLowerCase();if(!id)return null;return all("a").find(x=>x.id!==exceptId&&String(x.serial||"").toLowerCase()===id)||null}
+function asIdWarn(id,exceptId){const d=asIdDupOf(id,exceptId);return d?t("asIdDup").replace("{id}",id).replace("{name}",d.name||""):""}
+function asVinWarn(vin,id){const v=asVin7(vin);return v&&id&&v.toUpperCase()!==String(id).toUpperCase()?t("asVinMis").replace("{v}",v).replace("{id}",id):""}
+function asIsMach(type){return AS_MV.indexOf(type)>=0}
+function asFIn(f,a){const k=f[0],v=a[k]==null?"":String(a[k]),id="asF_"+k,lab=`<label for="${id}">${esc(t(AS_FL[k]))}</label>`;
+  if(f[1]==="sel")return lab+`<select id="${id}"><option value="">${esc(t("asPick"))}</option>${f[3].map(o=>`<option value="${o}"${v===o?" selected":""}>${esc(t(AS_STL[o]))}</option>`).join("")}</select>`;
+  if(f[1]==="area")return lab+`<textarea id="${id}" spellcheck="true">${esc(v)}</textarea>`;
+  if(f[1]==="date")return lab+`<input id="${id}" type="date" value="${esc(v)}">`;
+  if(f[1]==="vin")return lab+`<input id="${id}" type="text" autocomplete="off" spellcheck="false" autocapitalize="characters" style="text-transform:uppercase" value="${esc(v)}">${a.serial?"":`<p class="hint" id="asVinH">${esc(t("asIdFromVin"))}</p>`}<p class="err" id="asVinMis"${asVinWarn(v,a.serial)&&a.serial?' style="display:block"':""}>${esc(a.serial?asVinWarn(v,a.serial):"")}</p>`;
+  if(f[1]==="num")return lab+`<input id="${id}" type="text" inputmode="numeric" autocomplete="off" value="${esc(v)}">`;
+  if(f[1]==="meter"){const u=a.meterU||"";return lab+`<div style="display:grid;grid-template-columns:2fr 1fr;gap:6px"><input id="${id}" type="text" inputmode="numeric" autocomplete="off" value="${esc(v)}"><select id="asF_meterU" aria-label="${esc(t("asMeter"))}"><option value=""></option><option value="hrs"${u==="hrs"?" selected":""}>${esc(t("asHrs"))}</option><option value="km"${u==="km"?" selected":""}>${esc(t("asKm"))}</option></select></div>`}
+  return lab+`<input id="${id}" type="text" autocomplete="off" spellcheck="false" value="${esc(v)}">`}
+function asExtraFields(a,typ){a=a||{};const g=x=>AS_F.filter(f=>f[2]===x).map(f=>asFIn(f,a)).join("");
+  return `<div id="asMach"${asIsMach(typ)?"":' style="display:none"'}><h3>${esc(t("asMachH"))}</h3>${g("m")}</div>${g("s")}
+  <details id="asMore"><summary>${esc(t("asMore"))}</summary>${g("x")}</details>`}
+function asReadExtra(type){const o={},mach=asIsMach(type);AS_FK.forEach(k=>{const e=$("asF_"+k);const grp=(AS_F.find(f=>f[0]===k)||["","","m"])[2];o[k]=(grp==="m"&&!mach)?"":(e?String(e.value||"").trim():"")});if(!o.meter)o.meterU="";o.vin=asVinNorm(o.vin);return o}
+function asPickExtra(r){const o={};AS_FK.forEach(k=>{o[k]=r&&r[k]!=null?r[k]:""});return o}
+function asHasVal(v){return v!=null&&String(v).trim()!==""}
+function asFHas(f,a){return asHasVal(a&&a[f[0]])}
+function asCampVal(a){if(asHasVal(a&&a.campName))return String(a.campName).trim();return asHasVal(a&&a.campId)?asCampName(a.campId):""}
+function asBaseView(a){const camp=asCampVal(a);return (asHasVal(a.serial)?`<p class="hint" data-f="serial">${esc(t("asSerial"))}: ${esc(String(a.serial).trim())}</p>`:"")+(camp?`<p class="hint" data-f="camp">${esc(t("asCamp"))}: ${esc(camp)}</p>`:"")+(asHasVal(a.holder)?`<p class="hint" data-f="holder">${esc(t("asHolder"))}: ${esc(String(a.holder).trim())}</p>`:"")+(asHasVal(a.cond)?`<p class="hint" data-f="cond">${esc(t("asCond"))}: ${esc(asCond(a.cond))}</p>`:"")}
+function asFVal(f,a){const k=f[0],v=a[k]==null?"":String(a[k]).trim();if(!v)return "—";
+  if(f[1]==="date"){const d=new Date(v+"T12:00:00Z");return isNaN(d.getTime())?v:d.toLocaleDateString(dLoc(),{timeZone:"UTC",day:"numeric",month:"short",year:"numeric"})}
+  if(f[1]==="sel")return t(AS_STL[v]||"")||v;
+  if(f[1]==="meter")return v+(a.meterU?" "+t(a.meterU==="km"?"asKm":"asHrs"):"");
+  return v}
+function asExtraView(a){const row=f=>asFHas(f,a)?`<p class="hint asKv" data-f="${f[0]}">${esc(t(AS_FL[f[0]]))}: <b>${esc(asFVal(f,a))}</b></p>`:"",g=x=>AS_F.filter(f=>f[2]===x).map(row).join("");
+  const mach=asIsMach(a.type)?g("m"):"",stat=g("s"),photo=/^https:\/\//.test(String(a.photoUrl||""))?`<p class="hint"><a href="${esc(a.photoUrl)}" target="_blank" rel="noopener">📷 ${esc(t("asGrvPhoto"))}</a></p>`:"",more=g("x")+photo;
+  return `${mach?`<div id="asMachV"><h3>${esc(t("asMachH"))}</h3>${mach}</div>`:""}${stat}${more?`<div id="asMoreV"><h3>${esc(t("asMore"))}</h3>${more}</div>`:""}`}
+
 const AS_MV=["vehicle","excavator","pecker","crane","telehandler","skidsteer","tlb","flowbin","generator","bowser"];
 const AS_IC={vehicle:"🚗",excavator:"🚜",pecker:"🔨",crane:"🏗️",telehandler:"🚜",skidsteer:"🚜",tlb:"🚜",flowbin:"🛢️",generator:"⚡",bowser:"🛢️",tent:"⛺",starlink:"📡",table:"🪵",bed:"🛏️",container:"📦",other:"📦"};
 /* VER 7: the SAME pictures as TMC Fuel v38 (copied from Fuel's VICON, read only). One picture per machine type;
@@ -764,6 +839,7 @@ function workHTML(u){
   if(AS.screen==="move")return asMoveHTML(u);
   if(AS.screen==="approvals")return asApprHTML(u);
   if(AS.screen==="camps")return asCampsHTML(u);
+  if(AS.screen==="grv")return u.admin?asGrvHTML(u):asListHTML(u);
   if(AS.screen==="campform")return asCampForm(u);
   return asListHTML(u);
 }
@@ -777,7 +853,7 @@ function asListHTML(u){
   };
   const nPend=asPending().length;
   return `<div class="box" id="asList"><h2>${asLogo(28)} ${esc(t("asTitle"))}</h2>
-  ${u.admin?`<div class="rpAct">${nPend?`<button type="button" id="asApprBtn">${esc(t("asAppr"))} (${nPend})</button>`:`<button type="button" class="sec" id="asApprBtn">${esc(t("asAppr"))}</button>`}<button type="button" class="sec" id="asCampsBtn">${esc(t("asCamps"))}</button></div>`:""}
+  ${u.admin?`<div class="rpAct">${nPend?`<button type="button" id="asApprBtn">${esc(t("asAppr"))} (${nPend})</button>`:`<button type="button" class="sec" id="asApprBtn">${esc(t("asAppr"))}</button>`}<button type="button" class="sec" id="asCampsBtn">${esc(t("asCamps"))}</button></div>${(()=>{const n=asGrvRows().length;return `<button type="button" class="${n?"":"sec"}" id="asGrvBtn">📥 ${esc(t("asGrv"))}${n?" ("+n+")":""}</button>`})()}`:""}
   ${canKind("a","add")||canKind("r","add")?`<button type="button" id="asNew">${esc(t("asNew"))}</button>`:""}
   <label for="asQ">${esc(t("asSearch"))}</label><input id="asQ" type="search" value="${esc(AS.q)}" placeholder="${esc(t("asSearch"))}" autocomplete="off">
   <label for="asFltCamp">${esc(t("asCamp"))}</label><select id="asFltCamp"><option value="all">${esc(t("asAll"))}</option>${asCampRows().map(c=>`<option value="${esc(c.id)}"${AS.fltCamp===c.id?" selected":""}>${esc(c.name)}${c.example?" ("+esc(t("asEx"))+")":""}</option>`).join("")}</select>
@@ -790,17 +866,18 @@ function asFields(a){
   const condBtn=(k,lab)=>`<button type="button" class="sec${cond===k?" on":""}" data-ascond="${k}">${esc(lab)}</button>`;
   return `<label for="asName">${esc(t("asName"))}</label><input id="asName" data-draft="asName" type="text" autocomplete="off" spellcheck="true" autocapitalize="words" placeholder="${esc(t("asNameH"))}" value="${esc(a.name||"")}">
   <label for="asType">${esc(t("asType"))}</label><div class="typ" id="asTyp">${AS_PICS.map(k=>`<button type="button" class="${pic===k?"on":""}" data-aspic="${k}" title="${esc(asTy(asPicCat(k)))}" aria-label="${esc(asTy(asPicCat(k)))}">${asPicHTML(k)}</button>`).join("")}</div><select id="asType">${AS_TYPES.map(k=>`<option value="${k}"${typ===k?" selected":""}>${esc(asTy(k))}</option>`).join("")}</select>
-  <label for="asSerial">${esc(t("asSerial"))}</label><input id="asSerial" data-draft="asSerial" type="text" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="${esc(t("asSerialH"))}" value="${esc(a.serial||"")}"${a.serial?" readonly":""}>${a.serial?`<p class="hint">${esc(t("asIdFixed"))}</p>`:""}
+  <label for="asSerial">${esc(t("asSerial"))}</label><input id="asSerial" data-draft="asSerial" type="text" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="${esc(t("asSerialH"))}" value="${esc(a.serial||"")}"${a.serial||asVin7(a.vin)?" readonly":""}>${a.serial?`<p class="hint">${esc(t("asIdFixed"))}</p>`:""}<p class="err" id="asIdDup"></p>
   <label for="asCamp">${esc(t("asCamp"))}</label><select id="asCamp" data-draft="asCamp">${asCampRows().map(c=>`<option value="${esc(c.id)}"${c.id===camp?" selected":""}>${esc(c.name)}${c.example?" ("+esc(t("asEx"))+")":""}</option>`).join("")}</select>
   <label for="asHolder">${esc(t("asHolder"))}</label><input id="asHolder" data-draft="asHolder" type="text" autocomplete="off" spellcheck="true" autocapitalize="words" placeholder="${esc(t("asHolderH"))}" value="${esc(a.holder||"")}">
   <p class="hint">${esc(t("asCond"))}</p><div class="rpBar" id="asCondBar">${condBtn("good",t("asGood"))}${condBtn("repair",t("asRepair"))}${condBtn("broken",t("asBroken"))}</div>
+  ${asExtraFields(a,typ)}
   <p class="hint">${esc(t("asPhoto"))}</p>${photoHTML("asPhPick")}<img id="asPic" class="phPrev" alt="" style="${AS.pendingPhoto||(a.ph&&AS.thumbs[a.ph])?"max-height:180px;width:100%;object-fit:contain;background:#f8fafc":"display:none"}"${AS.pendingPhoto||(a.ph&&AS.thumbs[a.ph])?` src="${esc(AS.pendingPhoto||AS.thumbs[a.ph])}"`:""}>`;
 }
 function asFormHTML(u){
   const edit=!!AS.edit,item=edit?asItem(AS.id):null;
   if(edit&&!item){AS.screen="list";AS.edit=0;return asListHTML(u)}
   return `<div class="box" id="asForm"><h2>${esc(edit?t("asChange"):t("asNew"))}</h2>
-  ${asFields(item||{})}
+  ${asFields(item||(AS.prefill?Object.assign({},AS.prefill):{}))}
   <p class="err" id="asErr"${AS.err?' style="display:block"':""}>${esc(AS.err||"")}</p><p class="hint" id="drNote" style="display:none">${esc(t("draft"))}</p>
   <button type="button" id="asSave">${esc(t("asSave"))}</button></div>`;
 }
@@ -812,10 +889,8 @@ function asDetailHTML(u){
     return `<div class="box" id="asDetail"><h2>${esc(r.name||t("asDetail"))}</h2>${asThumb(r,"asHero")}
     <p><span class="st pending">${esc(t("asWait"))}</span> · ${esc(t("asPendAdd"))}${asEx(r)?" · "+esc(t("asEx")):""}</p>
     <p><b>${esc(asTy(r.type))}</b></p>
-    <p class="hint">${esc(t("asSerial"))}: ${esc(r.serial||t("asNo"))}</p>
-    <p class="hint">${esc(t("asCamp"))}: ${esc(r.campName||asCampName(r.campId))}</p>
-    <p class="hint">${esc(t("asHolder"))}: ${esc(r.holder||t("asNo"))}</p>
-    <p class="hint">${esc(t("asCond"))}: ${esc(asCond(r.cond))}</p>
+    ${asBaseView(r)}
+    ${asExtraView(r)}
     <p class="hint">${esc(t("asBy"))}: ${esc(r.by||"")} · ${esc(asWhen(r.at))}</p>
     ${r.ph?asPic(r.ph):""}${phBtn(r.ph)}</div>`;
   }
@@ -824,10 +899,8 @@ function asDetailHTML(u){
   const hrow=m=>`<div class="urow asMv" data-mid="${esc(m.id)}"><span class="n">${esc(m.fromName||asCampName(m.fromCampId))} → ${esc(m.toName||asCampName(m.toCampId))}</span><span class="hint">${esc(asWhen(m.at))} · ${esc(t("asBy"))}: ${esc(m.by||"")}${m.note?" · "+esc(m.note):""}${asEx(m)?" · "+esc(t("asEx")):""}</span></div>`;
   return `<div class="box" id="asDetail"><h2>${esc(a.name)}</h2>${asThumb(a,"asHero")}
   <p><b>${esc(asTy(a.type))}</b>${asEx(a)?" · "+esc(t("asEx")):""}${pend?` · <span class="st pending" id="asWaitTag">${esc(t("asWait"))}</span>`:""}</p>
-  <p class="hint">${esc(t("asSerial"))}: ${esc(a.serial||t("asNo"))}</p>
-  <p class="hint">${esc(t("asCamp"))}: ${esc(a.campName||asCampName(a.campId))}</p>
-  <p class="hint">${esc(t("asHolder"))}: ${esc(a.holder||t("asNo"))}</p>
-  <p class="hint">${esc(t("asCond"))}: ${esc(asCond(a.cond))}</p>
+  ${asBaseView(a)}
+  ${asExtraView(a)}
   <p class="hint">${esc(t("asBy"))}: ${esc(a.by||"")} · ${esc(asWhen(a.at))}</p>
   ${fixBtn("a",a.id,"name")}${fixedNote(a)}
   ${canKind("a","add")||canKind("r","add")?`<button type="button" id="asChange">${esc(t("asChange"))}</button><button type="button" class="sec" id="asMoveBtn">${esc(t("asMove"))}</button>`:""}</div>
@@ -854,7 +927,7 @@ function asApprHTML(u){
     else{bits.push(asTy(r.type));if(r.serial)bits.push(r.serial);bits.push(r.campName||asCampName(r.campId));if(r.holder)bits.push(r.holder);bits.push(asCond(r.cond))}
     return `<div class="box asReq" id="asReq_${esc(r.id)}" data-rid="${esc(r.id)}"><h3>${esc(r.name||typ)}</h3>
     <p><span class="st pending">${esc(t("asWait"))}</span> · ${esc(typ)}${asEx(r)?" · "+esc(t("asEx")):""}</p>
-    <p class="hint">${esc(bits.join(" · "))}</p>
+    <p class="hint">${esc(bits.join(" · "))}</p>${(()=>{if(r.typ==="move")return "";const cur=r.typ==="edit"?asItem(r.assetId):null,id=cur&&cur.serial?cur.serial:(r.serial||"");const w=[asVinWarn(r.vin,id),r.typ==="add"?asIdWarn(r.serial,r.assetId):""].filter(Boolean);return w.map(x=>`<p class="err asDupWarn" style="display:block">${esc(x)}</p>`).join("")})()}
     <p class="hint">${esc(t("asBy"))}: ${esc(r.by||"")} · ${esc(asWhen(r.at))}</p>
     <button type="button" class="asYes" data-rid="${esc(r.id)}">${esc(t("asApprove"))}</button>
     <button type="button" class="red asNo" data-rid="${esc(r.id)}">${esc(t("asReject"))}</button></div>`;
@@ -882,7 +955,7 @@ function asReadForm(){
   const campId=($("asCamp")||{}).value||"";
   const c=asCamp(campId);
   const r={name:name.trim(),serial:serial.trim(),holder:holder.trim(),campId:campId,campName:c?c.name:"",type:($("asType")&&$("asType").value)||AS._type||"vehicle",cond:AS._cond||"good",pic:""};
-  r.pic=(AS._pic&&asPicCat(AS._pic)===r.type&&AS_VICON[AS._pic])?AS._pic:"";return r;
+  r.pic=(AS._pic&&asPicCat(AS._pic)===r.type&&AS_VICON[AS._pic])?AS._pic:"";Object.assign(r,asReadExtra(r.type));if(!(AS.edit&&asItem(AS.id)&&asItem(AS.id).serial)&&asVin7(r.vin))r.serial=asVin7(r.vin);return r;
 }
 function asClearDrafts(){["asName","asSerial","asHolder","asCamp","asMoveHolder","asMoveNote","asCampName"].forEach(draftClear)}
 function asSaveItem(u){
@@ -901,7 +974,7 @@ function asSaveItem(u){
   if(cur){
     if(!ph)ph=cur.ph||"";
     if(asPendFor(cur.id).length){asErr(t("asHasPend"));return}
-    const data=Object.assign({},cur,{id:cur.id,type:f.type,pic:f.pic,name:f.name,serial:serial,campId:f.campId,campName:f.campName,holder:f.holder,cond:f.cond,ph:ph||"",by:cur.by,at:cur.at,updBy:u.name,updAt:new Date().toISOString(),example:asEx({name:f.name})||asEx(cur)?1:0,idFixed:cur.idFixed||(serial?1:0)});
+    const data=Object.assign({},cur,{id:cur.id,type:f.type,pic:f.pic,name:f.name,serial:serial,campId:f.campId,campName:f.campName,holder:f.holder,cond:f.cond,...asPickExtra(f),ph:ph||"",by:cur.by,at:cur.at,updBy:u.name,updAt:new Date().toISOString(),example:asEx({name:f.name})||asEx(cur)?1:0,idFixed:cur.idFixed||(serial?1:0)});
     if(u.admin){if(put("a",cur.id,data)===false)return}
     else{
       const rid="r"+Date.now();
@@ -910,14 +983,16 @@ function asSaveItem(u){
   }else{
     const id=isMv&&serial?asFixedId(serial):("a"+Date.now()),at=new Date().toISOString();
     if(isMv&&serial&&asItem(id)){asErr(t("asIdUsed"));return}
-    const data={id:id,type:f.type,pic:f.pic,name:f.name,serial:serial,campId:f.campId,campName:f.campName,holder:f.holder,cond:f.cond,ph:ph||"",by:u.name,at:at,example:asEx({name:f.name})?1:0,idFixed:serial?1:0};
+    const data={id:id,type:f.type,pic:f.pic,name:f.name,serial:serial,campId:f.campId,campName:f.campName,holder:f.holder,cond:f.cond,...asPickExtra(f),ph:ph||"",by:u.name,at:at,example:asEx({name:f.name})?1:0,idFixed:serial?1:0};
+    const pf=AS.prefill;if(pf&&pf.grvId){data.grvId=pf.grvId;if(pf.photoUrl)data.photoUrl=pf.photoUrl}
     if(u.admin){if(put("a",id,data)===false)return}
     else{
       const rid="r"+Date.now();
       if(put("r",rid,Object.assign({},data,{id:rid,typ:"add",status:"pending",assetId:id}))===false)return;
     }
   }
-  AS.pendingPhoto=null;AS.edit=0;asClearDrafts();afterSave(true);
+  if(!cur&&AS.prefill&&AS.prefill.grvId&&u.admin)asGrvMark(AS.prefill.grvId,u,"made");
+  AS.prefill=null;AS.pendingPhoto=null;AS.edit=0;asClearDrafts();afterSave(true);
 }
 function asSaveMove(u){
   const a=asItem(AS.id);if(!a)return;
@@ -945,11 +1020,11 @@ function asApplyMove(a,body){
 function asApprove(id,u){
   const r=all("r").find(x=>x.id===id);if(!r||r.status!=="pending")return false;
   if(r.typ==="add"){
-    const data={id:r.assetId||("a"+Date.now()),type:r.type,pic:r.pic||"",name:r.name,serial:r.serial,campId:r.campId,campName:r.campName,holder:r.holder,cond:r.cond,ph:r.ph||"",by:r.by,at:r.at,example:r.example?1:0,okBy:u.name,okAt:new Date().toISOString()};
+    const data={id:r.assetId||("a"+Date.now()),type:r.type,pic:r.pic||"",name:r.name,serial:r.serial,campId:r.campId,campName:r.campName,holder:r.holder,cond:r.cond,...asPickExtra(r),...(r.photoUrl?{photoUrl:r.photoUrl}:{}),...(r.grvId?{grvId:r.grvId}:{}),ph:r.ph||"",by:r.by,at:r.at,example:r.example?1:0,okBy:u.name,okAt:new Date().toISOString()};
     if(put("a",data.id,data)===false)return false;
   }else if(r.typ==="edit"){
     const cur=asItem(r.assetId);if(!cur)return false;
-    const data=Object.assign({},cur,{type:r.type,pic:r.pic||"",name:r.name,serial:cur.serial||r.serial,campId:r.campId,campName:r.campName,holder:r.holder,cond:r.cond,ph:r.ph||cur.ph||"",updBy:r.by,updAt:r.at,okBy:u.name,okAt:new Date().toISOString(),idFixed:cur.idFixed||((cur.serial||r.serial)?1:0)});
+    const data=Object.assign({},cur,{type:r.type,pic:r.pic||"",name:r.name,serial:cur.serial||r.serial,campId:r.campId,campName:r.campName,holder:r.holder,cond:r.cond,...asPickExtra(r),ph:r.ph||cur.ph||"",updBy:r.by,updAt:r.at,okBy:u.name,okAt:new Date().toISOString(),idFixed:cur.idFixed||((cur.serial||r.serial)?1:0)});
     if(put("a",cur.id,data)===false)return false;
   }else if(r.typ==="move"){
     const cur=asItem(r.assetId);if(!cur)return false;
@@ -974,7 +1049,10 @@ function asSaveCamp(u){
 function bindWork(u){
   asNav();asEnsureCamps();asEnsureMachines();
   const on=(id,f)=>{const e=$(id);if(e)e.onclick=f};
-  on("asNew",()=>{AS._type="vehicle";AS._pic="car";AS._cond="good";AS.pendingPhoto=null;asGo("form",{edit:0,id:null})});
+  on("asNew",()=>{AS.prefill=null;AS._type="vehicle";AS._pic="car";AS._cond="good";AS.pendingPhoto=null;asGo("form",{edit:0,id:null})});
+  on("asGrvBtn",()=>asGo("grv"));
+  document.querySelectorAll(".asGrvMake").forEach(b=>b.onclick=()=>{const g=all("g").find(x=>x.id===b.dataset.gid);if(!g)return;AS.prefill=asGrvPrefill(g);AS._type="other";AS._pic="other";AS._cond="good";AS.pendingPhoto=null;asGo("form",{edit:0,id:null})});
+  document.querySelectorAll(".asGrvHide").forEach(b=>b.onclick=()=>{if(asGrvMark(b.dataset.gid,u,"hide")!==false)render()});
   on("asSave",()=>asSaveItem(u));
   on("asSaveMove",()=>asSaveMove(u));
   on("asSaveCamp",()=>asSaveCamp(u));
@@ -985,8 +1063,15 @@ function bindWork(u){
   on("asMoveBtn",()=>asGo("move"));
   const ft=$("asFltType");if(ft)ft.onchange=()=>{AS.fltType=ft.value;render()};
   const typ=$("asType");const picOn=()=>document.querySelectorAll("[data-aspic]").forEach(x=>x.classList.toggle("on",x.dataset.aspic===AS._pic));
-  if(typ)typ.onchange=()=>{AS._type=typ.value;if(asPicCat(AS._pic)!==AS._type)AS._pic=AS._type==="vehicle"?"car":AS._type;picOn()};
-  document.querySelectorAll("[data-aspic]").forEach(b=>b.onclick=()=>{AS._pic=b.dataset.aspic;AS._type=asPicCat(AS._pic);if(typ)typ.value=AS._type;picOn()});
+  const vinIn=$("asF_vin"),serIn=$("asSerial"),curA=AS.edit?asItem(AS.id):null,fixedId=curA&&curA.serial?curA.serial:"";
+  const idChk=()=>{const w=$("asIdDup");if(!w||!serIn)return;const m=fixedId?"":asIdWarn(serIn.value.trim(),curA?curA.id:null);w.textContent=m;w.style.display=m?"block":"none"};
+  if(serIn&&!fixedId)serIn.addEventListener("input",idChk);
+  if(vinIn)vinIn.oninput=()=>{const n=asVinNorm(vinIn.value);if(n!==vinIn.value)vinIn.value=n;const v7=asVin7(n),mw=$("asVinMis");
+    if(fixedId){const m=asVinWarn(n,fixedId);if(mw){mw.textContent=m;mw.style.display=m?"block":"none"}}
+    else if(serIn){if(v7){serIn.value=v7;serIn.readOnly=true}else serIn.readOnly=false;idChk()}};
+  const machOn=()=>{const m=$("asMach");if(m)m.style.display=asIsMach(AS._type)?"":"none"};
+  if(typ)typ.onchange=()=>{AS._type=typ.value;if(asPicCat(AS._pic)!==AS._type)AS._pic=AS._type==="vehicle"?"car":AS._type;picOn();machOn()};
+  document.querySelectorAll("[data-aspic]").forEach(b=>b.onclick=()=>{AS._pic=b.dataset.aspic;AS._type=asPicCat(AS._pic);if(typ)typ.value=AS._type;picOn();machOn()});
   document.querySelectorAll("[data-ascond]").forEach(b=>b.onclick=()=>{AS._cond=b.dataset.ascond;document.querySelectorAll("[data-ascond]").forEach(x=>x.classList.toggle("on",x.dataset.ascond===AS._cond))});
   document.querySelectorAll(".asOpen").forEach(b=>b.onclick=()=>asGo("detail",{id:b.dataset.open,edit:0}));
   document.querySelectorAll(".asYes").forEach(b=>b.onclick=()=>{asApprove(b.dataset.rid,u);render()});
@@ -1001,7 +1086,7 @@ function asNav(){
   if(asNav.done||!window.TMC.nav)return;asNav.done=1;const N=window.TMC.nav;
   N.keys.push(o=>{if(o.t==="work"){o.sc=AS.screen;o.ai=AS.id||"";o.ed=AS.edit?1:0}return o});
   N.sets.push(o=>{if(o.sc){AS.screen=o.sc;AS.id=o.ai||null;AS.edit=o.ed?1:0;AS.pendingPhoto=null}});
-  N.ups.push(()=>{if(tab!=="work")return false;let to=null;if(AS.screen==="move"||(AS.screen==="form"&&AS.edit))to="detail";else if(AS.screen==="campform")to="camps";else if(AS.screen==="detail"||AS.screen==="form"||AS.screen==="approvals"||AS.screen==="camps")to="list";else return false;AS.screen=to;AS.pendingPhoto=null;if(to==="list"){AS.id=null;AS.edit=0}N.st=N.st.filter(k=>{try{const o=JSON.parse(k);return !(o.t==="work"&&o.sc&&o.sc!=="list")}catch(e){return true}});return true});
+  N.ups.push(()=>{if(tab!=="work")return false;let to=null;if(AS.screen==="move"||(AS.screen==="form"&&AS.edit))to="detail";else if(AS.screen==="form"&&AS.prefill&&AS.prefill.grvId){to="grv";AS.prefill=null}else if(AS.screen==="campform")to="camps";else if(AS.screen==="detail"||AS.screen==="form"||AS.screen==="approvals"||AS.screen==="camps"||AS.screen==="grv")to="list";else return false;AS.screen=to;AS.pendingPhoto=null;if(to==="list"){AS.id=null;AS.edit=0}N.st=N.st.filter(k=>{try{const o=JSON.parse(k);return !(o.t==="work"&&o.sc&&o.sc!=="list")}catch(e){return true}});return true});
   N.dirty.push(()=>tab==="work"&&AS.screen==="form"&&!!AS.pendingPhoto);
   N.clear.push(()=>{AS.pendingPhoto=null});
 }
