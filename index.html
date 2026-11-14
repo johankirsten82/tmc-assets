@@ -24,7 +24,7 @@
   "CACHE_PREFIX": "tmcassets",
   "NAME": "TMC Assets",
   "SHORT": "TMC Assets",
-  "VER": 9,
+  "VER": 10,
   "COLOR": "#0e7490",
   "COLOR_DARK": "#155e75",
   "REPORT_COLOR": "#1B7F3B",
@@ -58,6 +58,10 @@ input,select,textarea,button{font:inherit;font-size:18px;min-height:58px;width:1
 textarea{min-height:80px}
 /* VER 9 (Johan 11 Nov 2026): machine details + More details */
 #asMore{margin:10px 0;border:2px solid #cbd5e1;border-radius:10px;padding:4px 10px;background:#f8fafc}#asMore>summary{font-size:19px;font-weight:700;min-height:52px;display:flex;align-items:center;cursor:pointer}#asMach h3,#asMore h3{margin:12px 0 2px}.asKv{margin:4px 0}.asKv b{font-weight:600}
+/* VER 10 (Johan 14 Nov 2026): big Fitted now switch on an excavator */
+.asImpH{font-size:20px;font-weight:800;margin:10px 0 4px}#asImpBox{margin:8px 0 12px}.asImp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0}
+.asImp button{margin:0;min-height:64px;font-size:20px;font-weight:800;background:#e2e8f0;color:#0f172a;border:3px solid #cbd5e1;box-shadow:none;white-space:normal;line-height:1.2}
+.asImp button.on{background:#fffbeb;color:#0f172a;border-color:#f59e0b;outline:3px solid #f59e0b}
 button{background:var(--c);color:#fff;border:0;font-weight:600;cursor:pointer;touch-action:manipulation}
 button.sec{background:#e2e8f0;color:#0f172a}button.red{background:#b91c1c}button.sm{width:auto;padding:8px 14px;margin:4px}
 label{display:block;font-size:14px;color:#475569;margin:8px 0 4px}
@@ -126,7 +130,19 @@ nav.tabs .tlab{display:block;width:100%;font-size:12px;line-height:1.2;text-alig
 .fixB{width:auto;min-width:120px;min-height:56px;background:#b45309;font-size:18px}.fixN{width:100%}
 .dsc h2{color:#b91c1c}.dsc button{min-height:60px;font-size:20px}
 #updGo{position:fixed;inset:0;z-index:99999;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:18px}#updGo img{width:96px;height:96px;border-radius:20px}#updGo b{font-size:30px;line-height:1.25;color:#0f172a}#updGo span{font-size:20px;color:#475569}#updGo i{width:64px;height:64px;border:7px solid #e2e8f0;border-top-color:#0f766e;border-radius:50%;animation:updSp 1s linear infinite}@keyframes updSp{to{transform:rotate(360deg)}}
-.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;z-index:20;padding:16px;overflow:auto}
+/* VER 15 — popups/toasts/bars stay fully on screen and never cover the bottom menu (Johan, 11 Nov 2026) */
+:root{--tabh:84px}
+.modal .card{box-sizing:border-box;min-width:0;width:100%;max-width:min(440px,calc(100vw - 16px));max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow:auto;overflow-wrap:break-word;word-break:normal}
+.modal .card h2,.modal .card h3,.modal .card p,.modal .card b,.modal .card span,.modal .card label,.modal .card small,.modal .card div,.modal .card textarea,.modal .card input{overflow-wrap:break-word;word-break:normal;min-width:0;max-width:100%}
+.modal .card textarea,.modal .card input{box-sizing:border-box}
+#tmcToast{position:fixed!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;bottom:calc(var(--tabh,84px) + env(safe-area-inset-bottom,0px))!important;width:calc(100vw - 16px)!important;max-width:min(440px,calc(100vw - 16px))!important;max-height:calc(100vh - var(--tabh,84px) - env(safe-area-inset-bottom,0px) - 16px)!important;overflow:auto!important;overflow-wrap:break-word!important;word-break:normal!important;box-sizing:border-box!important;z-index:9999}
+.floatBar,.drnote,.bkBar{position:fixed;left:50%;right:auto;transform:translateX(-50%);bottom:calc(var(--tabh,84px) + env(safe-area-inset-bottom,0px));z-index:15;width:calc(100vw - 16px);max-width:min(440px,calc(100vw - 16px));max-height:min(50vh,calc(100vh - var(--tabh,84px) - env(safe-area-inset-bottom,0px) - 16px));overflow:auto;overflow-wrap:break-word;word-break:normal;box-sizing:border-box;background:#fef9c3;border:1px solid #eab308;color:#713f12;border-radius:12px;padding:8px 10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.18);font-weight:600}
+.floatBar span,.drnote span,.bkBar span{flex:1 1 12em;min-width:min(100%,10em);overflow-wrap:break-word;word-break:normal}
+.floatBar button,.drnote button,.bkBar button{flex:0 1 auto;margin:0;width:auto;max-width:100%;min-height:56px;padding:6px 10px;white-space:normal;overflow-wrap:break-word;word-break:normal}
+#updGo{overflow:auto}#updGo b,#updGo span,.phOv .phMsg{overflow-wrap:break-word;word-break:normal;max-width:100%;min-width:0}
+.bar{max-width:100%;overflow-wrap:break-word;word-break:normal}
+nav.tabs .tlab{word-break:normal;overflow-wrap:normal;hyphens:none;-webkit-hyphens:none}
 .ncW{background:#fee2e2;border:1px solid #dc2626;color:#7f1d1d}
 .qr{width:240px;height:240px;max-width:80vw;max-height:80vw;background:#fff}
 
@@ -291,7 +307,17 @@ function permLab(p){return p[lang]||p.en}
 /* VER 6 ADMIN FIX RULE (phone): role + token decide, never the team code alone. Admin with a token = fix, even if a team code is saved.
    A team-code phone with no token counts as staff (the server refuses its fixes). See tests/admin_fix_test_spec.md. */
 function canFix(){const m=me();if(!(m&&m.admin))return false;return !!(sTok()||!sCode())}
-function put(kind,id,data){if(updLock){toast(t("updGo"));return false}const k=kind+":"+id;if(kind==="u"&&R[k]&&!R[k].del&&isMain(R[k].data)&&!mainKept(data)){toast(t("dscMain"));return false}if(kind!=="u"&&R[k]&&!R[k].del&&!canFix()){alert(t("fixOnly"));return false}if(kind!=="u"&&!R[k]&&!canKind(kind,"add")){alert(t("noAccess"));return false}const u=Math.max(Date.now(),R[k]?R[k].u+1:0);R[k]={kind:kind,id:String(id),u:u,del:0,data:data};dirty[k]=1;saveR();syncSoon();return true}
+/* VER 10: signed-in staff may change only implement / implementAt / implementBy (and updBy / updAt) on an excavator. */
+function staffImplementOk(kind,id,data){
+  if(kind!=="a"||!me())return false;
+  const old=R[kind+":"+id];if(!old||old.del||!old.data||old.data.type!=="excavator")return false;
+  const n=data||{},to=String(n.implement||"");
+  if(to&&to!=="bucket"&&to!=="pecker")return false;
+  const IMP={implement:1,implementAt:1,implementBy:1,updBy:1,updAt:1},keys={};
+  Object.keys(old.data).forEach(k=>keys[k]=1);Object.keys(n).forEach(k=>keys[k]=1);
+  return Object.keys(keys).every(k=>IMP[k]||String(old.data[k]==null?"":old.data[k])===String(n[k]==null?"":n[k]));
+}
+function put(kind,id,data){if(updLock){toast(t("updGo"));return false}const k=kind+":"+id;if(kind==="u"&&R[k]&&!R[k].del&&isMain(R[k].data)&&!mainKept(data)){toast(t("dscMain"));return false}if(kind!=="u"&&R[k]&&!R[k].del&&!canFix()&&!staffImplementOk(kind,id,data)){alert(t("fixOnly"));return false}if(kind!=="u"&&!R[k]&&!canKind(kind,"add")){alert(t("noAccess"));return false}const u=Math.max(Date.now(),R[k]?R[k].u+1:0);R[k]={kind:kind,id:String(id),u:u,del:0,data:data};dirty[k]=1;saveR();syncSoon();return true}
 function remove(kind,id){if(updLock){toast(t("updGo"));return false}const k=kind+":"+id;if(kind==="u")return false;if(kind!=="u"&&!canFix()){alert(t("fixOnly"));return false}const u=Math.max(Date.now(),R[k]?R[k].u+1:0);R[k]={kind:kind,id:String(id),u:u,del:1,data:null};dirty[k]=1;saveR();syncSoon();return true}
 /* fix(): Admin changes one field; old value, Admin name and time are kept in data._fix (audit column) and the server "Fix log" tab. */
 function fix(kind,id,field,val){if(!canFix())return false;const k=kind+":"+id,r=R[k];if(!r||r.del)return false;const d=Object.assign({},r.data),old=d[field];if(String(old)===String(val))return true;
@@ -396,7 +422,7 @@ function tabsOf(u){return [["home","🏠"],...(workOk(u)?[["work",asLogo(24)]]:[
 function repOk(u){u=u||me();return !!u&&(!!u.admin||can("reports",u))}
 function workOk(u){return (C.PERMS||[]).length===0||["view","add","reports","export"].some(p=>can(p,u))}
 function navBtn(k,ic,n){return `<button type="button" data-tab="${k}" class="${tab===k?"on":""}"><span class="ticon">${ic}</span><span class="tlab">${esc(t(k))}</span>${n?`<span class="badge">${n}</span>`:""}</button>`}
-function fitTabs(){document.querySelectorAll("nav.tabs .tlab").forEach(el=>{el.style.fontSize="";let fs=parseFloat(getComputedStyle(el).fontSize)||12;while(el.scrollWidth>el.clientWidth+0.5&&fs>7){fs=Math.round((fs-0.5)*10)/10;el.style.fontSize=fs+"px"}})}
+function fitTabs(){document.querySelectorAll("nav.tabs .tlab").forEach(el=>{el.style.fontSize="";let fs=parseFloat(getComputedStyle(el).fontSize)||12;while(el.scrollWidth>el.clientWidth+0.5&&fs>7){fs=Math.round((fs-0.5)*10)/10;el.style.fontSize=fs+"px"}});const n=document.querySelector("nav.tabs");if(n)document.documentElement.style.setProperty("--tabh",(n.offsetHeight+12)+"px")}
 addEventListener("resize",fitTabs);
 window.TMC.render=render;
 
@@ -664,6 +690,11 @@ asTyContainer:"حاوية",asTyOther:"أخرى",asTyCrane:"رافعة",asTyTeleh
 asTyPecker:"كسارة",asTyFlowbin:"فلووبن",asTyGenerator:"مولد",asTyBowser:"صهريج",
 asNeedSerial:"اكتب الرقم التسلسلي أو رقم اللوحة. هذا هو المعرّف الثابت ولا يمكن تغييره لاحقًا.",asIdFixed:"هذا المعرّف لا يتغير أبدًا.",
 asIdUsed:"هذا المعرّف موجود على القائمة بالفعل."});
+/* VER 10 (Johan 14 Nov 2026): excavator Fitted now — Bucket / Pecker, any staff, logged */
+Object.assign(T.en,{asFitted:"Fitted now",asBucket:"Bucket",asPecker:"Pecker",asImpNone:"Not set",asHist:"History",asNoHist:"Nothing yet."});
+Object.assign(T.fr,{asFitted:"Monté maintenant",asBucket:"Godet",asPecker:"Brise-roche",asImpNone:"Non défini",asHist:"Historique",asNoHist:"Rien pour le moment."});
+Object.assign(T.af,{asFitted:"Nou gemonteer",asBucket:"Bak",asPecker:"Breekhamer",asImpNone:"Nie gestel",asHist:"Geskiedenis",asNoHist:"Nog niks nie."});
+Object.assign(T.ar,{asFitted:"مركّب الآن",asBucket:"جردل",asPecker:"مطرقة",asImpNone:"غير محدد",asHist:"السجل",asNoHist:"لا يوجد شيء بعد."});
 const AS={screen:"list",fltType:"all",fltCamp:"all",q:"",id:null,edit:0,pendingPhoto:null,thumbs:{},err:""};
 const AS_TZ="Africa/Ndjamena";
 const AS_TYPES=["vehicle","excavator","pecker","crane","telehandler","skidsteer","tlb","flowbin","generator","bowser","tent","starlink","table","bed","container","other"];
@@ -797,6 +828,24 @@ function asWhen(at){
   const today=new Date().toLocaleDateString(loc,{timeZone:AS_TZ,day:"numeric",month:"short",year:"numeric"});
   return (day===today?"":day+" ")+tm;
 }
+function asImpVal(v){v=String(v||"").toLowerCase();return v==="bucket"||v==="pecker"?v:""}
+function asImpLab(v){v=asImpVal(v);return v?t(v==="pecker"?"asPecker":"asBucket"):""}
+function asImpLine(a){if(!a||a.type!=="excavator")return "";const cur=asImpVal(a.implement);return t("asFitted")+": "+(cur?asImpLab(cur):t("asImpNone"))}
+function asImpSwitch(a){
+  if(!a||a.type!=="excavator")return "";
+  const cur=asImpVal(a.implement);
+  const btn=k=>`<button type="button" class="${cur===k?"on":""}" data-asimp="${k}" id="asImp_${k}">${esc(t(k==="bucket"?"asBucket":"asPecker"))}</button>`;
+  return `<div id="asImpBox"><p class="asImpH">${esc(asImpLine(a))}</p><div class="asImp">${btn("bucket")}${btn("pecker")}</div></div>`;
+}
+function asSetImplement(a,to,u){
+  if(!u||!a||a.type!=="excavator")return false;
+  to=asImpVal(to);const from=asImpVal(a.implement);if(!to||to===from)return false;
+  const at=new Date().toISOString(),mid="m"+Date.now();
+  if(put("a",a.id,Object.assign({},a,{implement:to,implementAt:at,implementBy:u.name,updBy:u.name,updAt:at}))===false)return false;
+  if(put("m",mid,{id:mid,typ:"implement",assetId:a.id,name:a.name,fromImp:from,toImp:to,by:u.name,at:at})===false)return false;
+  toast(t("asFitted")+": "+asImpLab(to));
+  return true;
+}
 function asErr(msg){AS.err=msg||"";const e=$("asErr");if(!e)return;e.textContent=AS.err;e.style.display=AS.err?"block":"none"}
 function asEx(r){return !!(r&&(r.example||/\b(example|sample|exemple|voorbeeld)\b/i.test(String(r.name||r.note||""))))}
 function asDefaults(){return[{id:"c_hq",name:"HQ",example:0},{id:"c_gz",name:"GZ",example:0},{id:"c_10alfa",name:"10 Alfa",example:0},{id:"c_production",name:"Production",example:0},{id:"c_terex",name:"Terex",example:0},{id:"c_workshop",name:"Workshop",example:0},{id:"c_crusher",name:"Mobile Crusher",example:0},{id:"c_spare",name:"Spare",example:0}]}
@@ -849,7 +898,7 @@ function asListHTML(u){
     const a=it.row,pend=it.pend,wait=!!pend;
     const camp=a.campName||asCampName(a.campId);
     const openId=it.kind==="r"?("r:"+a.id):a.id;
-    return `<button type="button" class="uli asOpen" id="asRow_${esc(a.id)}" data-open="${esc(openId)}">${asThumb(a,"ui asPicT")}<span class="ut"><span class="n">${esc(a.name||t("asNo"))}${asEx(a)?" · "+esc(t("asEx")):""}</span><small>${esc(asTy(a.type))}${a.serial?" · "+esc(a.serial):""} · ${esc(camp)}</small><small>${esc(asCond(a.cond||"good"))}${a.holder?" · "+esc(a.holder):""}${wait?" · ":""}${wait?esc(t("asWait")):""}</small></span><span class="ch">›</span></button>`;
+    return `<button type="button" class="uli asOpen" id="asRow_${esc(a.id)}" data-open="${esc(openId)}">${asThumb(a,"ui asPicT")}<span class="ut"><span class="n">${esc(a.name||t("asNo"))}${asEx(a)?" · "+esc(t("asEx")):""}</span><small>${esc(asTy(a.type))}${a.serial?" · "+esc(a.serial):""} · ${esc(camp)}</small>${a.type==="excavator"?`<small class="asImpCard">${esc(asImpLine(a))}</small>`:""}<small>${esc(asCond(a.cond||"good"))}${a.holder?" · "+esc(a.holder):""}${wait?" · ":""}${wait?esc(t("asWait")):""}</small></span><span class="ch">›</span></button>`;
   };
   const nPend=asPending().length;
   return `<div class="box" id="asList"><h2>${asLogo(28)} ${esc(t("asTitle"))}</h2>
@@ -896,9 +945,10 @@ function asDetailHTML(u){
   }
   const a=asItem(AS.id);if(!a){AS.screen="list";AS.id=null;return asListHTML(u)}
   const pend=asPendFor(a.id)[0],hist=asMoves(a.id);
-  const hrow=m=>`<div class="urow asMv" data-mid="${esc(m.id)}"><span class="n">${esc(m.fromName||asCampName(m.fromCampId))} → ${esc(m.toName||asCampName(m.toCampId))}</span><span class="hint">${esc(asWhen(m.at))} · ${esc(t("asBy"))}: ${esc(m.by||"")}${m.note?" · "+esc(m.note):""}${asEx(m)?" · "+esc(t("asEx")):""}</span></div>`;
+  const hrow=m=>m.typ==="implement"?`<div class="urow asMv asImpRow" data-mid="${esc(m.id)}"><span class="n">${esc(asImpLab(m.fromImp)||t("asNo"))} → ${esc(asImpLab(m.toImp)||t("asNo"))}</span><span class="hint">${esc(asWhen(m.at))} · ${esc(t("asBy"))}: ${esc(m.by||"")}</span></div>`:`<div class="urow asMv" data-mid="${esc(m.id)}"><span class="n">${esc(m.fromName||asCampName(m.fromCampId))} → ${esc(m.toName||asCampName(m.toCampId))}</span><span class="hint">${esc(asWhen(m.at))} · ${esc(t("asBy"))}: ${esc(m.by||"")}${m.note?" · "+esc(m.note):""}${asEx(m)?" · "+esc(t("asEx")):""}</span></div>`;
   return `<div class="box" id="asDetail"><h2>${esc(a.name)}</h2>${asThumb(a,"asHero")}
   <p><b>${esc(asTy(a.type))}</b>${asEx(a)?" · "+esc(t("asEx")):""}${pend?` · <span class="st pending" id="asWaitTag">${esc(t("asWait"))}</span>`:""}</p>
+  ${asImpSwitch(a)}
   ${asBaseView(a)}
   ${asExtraView(a)}
   <p class="hint">${esc(t("asBy"))}: ${esc(a.by||"")} · ${esc(asWhen(a.at))}</p>
@@ -1073,6 +1123,7 @@ function bindWork(u){
   if(typ)typ.onchange=()=>{AS._type=typ.value;if(asPicCat(AS._pic)!==AS._type)AS._pic=AS._type==="vehicle"?"car":AS._type;picOn();machOn()};
   document.querySelectorAll("[data-aspic]").forEach(b=>b.onclick=()=>{AS._pic=b.dataset.aspic;AS._type=asPicCat(AS._pic);if(typ)typ.value=AS._type;picOn();machOn()});
   document.querySelectorAll("[data-ascond]").forEach(b=>b.onclick=()=>{AS._cond=b.dataset.ascond;document.querySelectorAll("[data-ascond]").forEach(x=>x.classList.toggle("on",x.dataset.ascond===AS._cond))});
+  document.querySelectorAll("[data-asimp]").forEach(b=>b.onclick=()=>{if(asSetImplement(asItem(AS.id),b.dataset.asimp,u))render()});
   document.querySelectorAll(".asOpen").forEach(b=>b.onclick=()=>asGo("detail",{id:b.dataset.open,edit:0}));
   document.querySelectorAll(".asYes").forEach(b=>b.onclick=()=>{asApprove(b.dataset.rid,u);render()});
   document.querySelectorAll(".asNo").forEach(b=>b.onclick=()=>{asReject(b.dataset.rid,u);render()});
@@ -1103,7 +1154,7 @@ bindMain=function(u){
   _asBind(u);
   const e=$("asHomeAp");if(e)e.onclick=()=>{tab="work";asGo("approvals")};
 };
-window.TMC.as=()=>AS;window.TMC.asPending=asPending;window.TMC.asApprove=asApprove;window.TMC.asReject=asReject;window.TMC.asItem=asItem;window.TMC.asCamps=asCampRows;window.TMC.asWhen=asWhen;window.TMC.AS_TZ=AS_TZ;window.TMC.AS_MASTER=AS_MASTER;window.TMC.AS_MV=AS_MV;window.TMC.asFixedId=asFixedId;window.TMC.asFuelId=asFuelId;window.TMC.asNormCamp=asNormCamp;window.TMC.asEnsureMachines=asEnsureMachines;
+window.TMC.as=()=>AS;window.TMC.asPending=asPending;window.TMC.asApprove=asApprove;window.TMC.asReject=asReject;window.TMC.asItem=asItem;window.TMC.asCamps=asCampRows;window.TMC.asWhen=asWhen;window.TMC.AS_TZ=AS_TZ;window.TMC.AS_MASTER=AS_MASTER;window.TMC.AS_MV=AS_MV;window.TMC.asFixedId=asFixedId;window.TMC.asFuelId=asFuelId;window.TMC.asNormCamp=asNormCamp;window.TMC.asEnsureMachines=asEnsureMachines;window.TMC.asSetImplement=asSetImplement;window.TMC.asImpVal=asImpVal;window.TMC.asImpLab=asImpLab;window.TMC.asImpLine=asImpLine;window.TMC.staffImplementOk=staffImplementOk;
 /* ==================== APP FEATURES END ==================== */
 
 function canHTML(u){
@@ -1227,8 +1278,13 @@ function paintSync(){paintNc();
 }
 setInterval(paintSync,2000);addEventListener("online",paintSync);addEventListener("offline",paintSync);
 /* VER 6: small plain message at the bottom (no OK button) */
-function toast(m){let w=$("tmcToast");if(!w){w=document.createElement("div");w.id="tmcToast";w.setAttribute("role","status");w.style.cssText="position:fixed;left:12px;right:12px;bottom:84px;z-index:9999;background:#7c2d12;color:#fff;padding:14px 16px;border-radius:12px;font-size:17px;line-height:1.35;box-shadow:0 4px 14px rgba(0,0,0,.3);text-align:center";document.body.appendChild(w)}w.textContent=m;w.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>{w.style.display="none"},7000)}
+function toast(m){let w=$("tmcToast");if(!w){w=document.createElement("div");w.id="tmcToast";w.setAttribute("role","status");w.style.cssText="background:#7c2d12;color:#fff;padding:14px 16px;border-radius:12px;font-size:17px;line-height:1.35;box-shadow:0 4px 14px rgba(0,0,0,.3);text-align:center";document.body.appendChild(w)}w.textContent=m;w.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>{w.style.display="none"},7000)}
 window.TMC.toast=toast;
+if(navigator.webdriver)window.TMC.popupTest={share:()=>shareModal(),nav:()=>navAsk(()=>{}),dsc:(id,w)=>discardModal(id,w||"reject"),upd:on=>updScreen(on),
+  toast:m=>toast(m),
+  bar:(cls,html)=>{let w=$(cls==="bkBar"?"bkBar":"drNoteBar");if(w)w.remove();w=document.createElement("div");w.id=cls==="bkBar"?"bkBar":"drNoteBar";w.className=cls;w.innerHTML=html;document.body.appendChild(w);return w},
+  fix:(k,i,f)=>{const b=document.createElement("button");b.className="fixB";b.dataset.k=k;b.dataset.i=i;b.dataset.f=f;b.hidden=true;document.body.appendChild(b);bindFix();b.click();b.remove()}};
+
 function onData(){const u=me();if(flow&&flow.s==="wait"&&!u){/* stay */}if(!u&&L.get("uid")){signOut();render();return}
   const a=document.activeElement;if(u&&!formDirty&&!(a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA")))render()}
 
